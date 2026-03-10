@@ -149,6 +149,24 @@ export default function ViewerPage() {
             </div>
           )}
           <SceneCanvas model={currentModel} />
+
+          {/* Floating action buttons — bottom left */}
+          <div className="absolute bottom-4 left-4 z-20 flex gap-2">
+            <button
+              onClick={() => setFloatingXYZ(!floatingXYZ)}
+              className={`p-2.5 rounded-xl border-2 shadow-lg transition-all duration-200 ${floatingXYZ ? "border-gold bg-gold/15 text-gold-dark" : "border-border bg-card/90 backdrop-blur text-foreground hover:border-gold/50"}`}
+              title={isRtl ? "ג'ויסטיק XYZ" : "XYZ Joystick"}
+            >
+              <Gamepad2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setDebugConsole(!debugConsole)}
+              className={`p-2.5 rounded-xl border-2 shadow-lg transition-all duration-200 ${debugConsole ? "border-green-500 bg-green-500/15 text-green-600" : "border-border bg-card/90 backdrop-blur text-foreground hover:border-green-500/50"}`}
+              title="Debug Console"
+            >
+              <Bug className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Edge hover trigger for auto-hide */}
