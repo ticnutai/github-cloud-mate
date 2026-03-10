@@ -355,4 +355,16 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
   resetModelPosition: () => set({ modelPosition: [0, 0, 0] }),
   dragMode: false,
   toggleDragMode: () => set((s) => ({ dragMode: !s.dragMode })),
+
+  cameraAction: null,
+  dispatchCamera: (type, payload) => set({ cameraAction: { type, payload } }),
+
+  gridVisible: false,
+  toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
+
+  exportAction: null,
+  setExportAction: (a) => set({ exportAction: a }),
+
+  currentModelKey: "open3dmodel",
+  setCurrentModelKey: (k) => set({ currentModelKey: k }),
 }));
