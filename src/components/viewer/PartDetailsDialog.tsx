@@ -11,12 +11,10 @@ export default function PartDetailsDialog({ onClose }: PartDetailsDialogProps) {
   const [activeTab, setActiveTab] = useState("info");
   const mesh = meshes.find((m) => m.name === selectedMesh);
 
-  if (!mesh) return null;
-
-  const pos = mesh.object.position;
-  const rot = mesh.object.rotation;
-  const scl = mesh.object.scale;
-  const obj = mesh.object as THREE.Mesh;
+  const pos = mesh?.object.position;
+  const rot = mesh?.object.rotation;
+  const scl = mesh?.object.scale;
+  const obj = mesh?.object as THREE.Mesh | undefined;
 
   // Compute geometry stats
   const geoInfo = useMemo(() => {
