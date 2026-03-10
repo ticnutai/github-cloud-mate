@@ -283,6 +283,8 @@ export default function ViewerPage() {
       {composerOpen && <ModelComposerDialog onClose={() => setComposerOpen(false)} />}
       {themeSettingsOpen && <ThemeSettingsDialog onClose={() => setThemeSettingsOpen(false)} />}
       {useViewerStore.getState().animGalleryOpen && <AnimationsGalleryDialog onClose={() => useViewerStore.getState().setAnimGalleryOpen(false)} />}
+      {floatingXYZ && <FloatingXYZDialog onClose={() => setFloatingXYZ(false)} />}
+      {debugConsole && <DebugConsole onClose={() => setDebugConsole(false)} />}
     </div>
   );
 }
