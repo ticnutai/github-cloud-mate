@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import GitHubIcon from "./GitHubIcon";
 
 interface ConnectScreenProps {
@@ -5,6 +6,8 @@ interface ConnectScreenProps {
 }
 
 const ConnectScreen = ({ onConnect }: ConnectScreenProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4">
       <div className="w-full max-w-md text-center">
@@ -13,13 +16,23 @@ const ConnectScreen = ({ onConnect }: ConnectScreenProps) => {
           חבר את הפרויקט שלך מ-GitHub והתחל לעבוד בענן.
         </p>
 
-        <button
-          onClick={onConnect}
-          className="inline-flex items-center gap-3 bg-primary text-primary-foreground px-6 py-3 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          <GitHubIcon />
-          <span>התחבר עם GitHub</span>
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={onConnect}
+            className="inline-flex items-center justify-center gap-3 bg-primary text-primary-foreground px-6 py-3 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            <GitHubIcon />
+            <span>התחבר עם GitHub</span>
+          </button>
+
+          <button
+            onClick={() => navigate("/viewer")}
+            className="inline-flex items-center justify-center gap-3 bg-secondary text-foreground px-6 py-3 rounded-md text-sm font-semibold hover:bg-accent transition-colors border border-border"
+          >
+            <span>🔬</span>
+            <span>Open3D Viewer</span>
+          </button>
+        </div>
 
         <p className="text-muted-foreground text-xs mt-8">
           נדרשת הרשאת קריאה לריפוזיטוריז שלך.
