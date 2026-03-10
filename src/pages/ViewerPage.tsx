@@ -7,6 +7,7 @@ import SceneCanvas from "@/components/viewer/SceneCanvas";
 import StructurePanel from "@/components/viewer/StructurePanel";
 import XRayPanel from "@/components/viewer/XRayPanel";
 
+import InfoBar from "@/components/viewer/InfoBar";
 import ProToolsPanel from "@/components/viewer/ProToolsPanel";
 import AnalysisPanel from "@/components/viewer/AnalysisPanel";
 import StudyModePanel from "@/components/viewer/StudyModePanel";
