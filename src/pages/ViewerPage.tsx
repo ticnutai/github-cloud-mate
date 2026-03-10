@@ -1,11 +1,36 @@
-import { useState } from "react";
-import { Globe, Settings, Pin } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Globe, Settings, Pin, PanelRightClose, PanelRight, Puzzle, ChevronDown, ChevronRight } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
 import StructurePanel from "@/components/viewer/StructurePanel";
 import XRayPanel from "@/components/viewer/XRayPanel";
 import InfoBar from "@/components/viewer/InfoBar";
+import CameraControls from "@/components/viewer/CameraControls";
+import ProToolsPanel from "@/components/viewer/ProToolsPanel";
+import AnalysisPanel from "@/components/viewer/AnalysisPanel";
+import StudyModePanel from "@/components/viewer/StudyModePanel";
+import AdvancedToolsPanel from "@/components/viewer/AdvancedToolsPanel";
+import XYZPanel from "@/components/viewer/XYZPanel";
+import PartDetailsDialog from "@/components/viewer/PartDetailsDialog";
+import ModelComposerDialog from "@/components/viewer/ModelComposerDialog";
+import ThemeSettingsDialog from "@/components/viewer/ThemeSettingsDialog";
+
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-border">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full px-3 py-2 hover:bg-accent/50 transition-colors"
+      >
+        <span className="text-[11px] font-semibold">{title}</span>
+        {open ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />}
+      </button>
+      {open && <div className="px-3 pb-3">{children}</div>}
+    </div>
+  );
+}
 
 export default function ViewerPage() {
   const [currentModel, setCurrentModel] = useState<ModelEntry>(MODELS[0]);
@@ -13,40 +38,40 @@ export default function ViewerPage() {
   const lang = useViewerStore((s) => s.lang);
   const toggleLang = useViewerStore((s) => s.toggleLang);
   const loading = useViewerStore((s) => s.loading);
+  const partDetailsOpen = useViewerStore((s) => s.partDetailsOpen);
+  const setPartDetailsOpen = useViewerStore((s) => s.setPartDetailsOpen);
+  const themeSettingsOpen = useViewerStore((s) => s.themeSettingsOpen);
+  const setThemeSettingsOpen = useViewerStore((s) => s.setThemeSettingsOpen);
+  const composerOpen = useViewerStore((s) => s.composerOpen);
+  const setComposerOpen = useViewerStore((s) => s.setComposerOpen);
+
+  const handleZoomIn = useCallback(() => {}, []);
+  const handleZoomOut = useCallback(() => {}, []);
+  const handleResetView = useCallback(() => {}, []);
+  const handleFocusSelected = useCallback(() => {}, []);
+  const handleSetAngle = useCallback((_angle: "front" | "side" | "top") => {}, []);
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-card shrink-0">
-        <h1 className="text-sm font-semibold tracking-tight">
-          Open3DModel Viewer
-        </h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {}}
-            className="p-1.5 rounded hover:bg-accent transition-colors"
-            title="Pin model position"
-          >
+      <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card shrink-0">
+        <h1 className="text-sm font-semibold tracking-tight">Open3DModel Viewer</h1>
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded hover:bg-accent transition-colors" title={sidebarOpen ? "Hide panel" : "Show panel"}>
+            {sidebarOpen ? <PanelRightClose className="w-4 h-4 text-muted-foreground" /> : <PanelRight className="w-4 h-4 text-muted-foreground" />}
+          </button>
+          <button onClick={() => {}} className="p-1.5 rounded hover:bg-accent transition-colors" title="Pin">
             <Pin className="w-4 h-4 text-muted-foreground" />
           </button>
-          <button
-            onClick={() => {}}
-            className="p-1.5 rounded hover:bg-accent transition-colors"
-            title="Settings"
-          >
+          <button onClick={() => setThemeSettingsOpen(true)} className="p-1.5 rounded hover:bg-accent transition-colors" title="Theme">
             <Settings className="w-4 h-4 text-muted-foreground" />
           </button>
-          <button
-            onClick={toggleLang}
-            className="p-1.5 rounded hover:bg-accent transition-colors"
-            title="Switch language"
-          >
+          <button onClick={toggleLang} className="p-1.5 rounded hover:bg-accent transition-colors" title="Language">
             <Globe className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
       </header>
 
-      {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
         {/* 3D Viewer */}
         <div className="flex-1 relative">
@@ -65,53 +90,87 @@ export default function ViewerPage() {
 
         {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-72 border-r border-border bg-card flex flex-col overflow-hidden shrink-0" dir={lang === "he" ? "rtl" : "ltr"}>
-            <div className="p-3 border-b border-border">
-              <h2 className="text-xs font-semibold mb-2">
-                {lang === "he" ? "בחר מודל" : "Choose Model"}
-              </h2>
-              <select
-                value={currentModel.key}
-                onChange={(e) => {
-                  const m = MODELS.find((m) => m.key === e.target.value);
-                  if (m) setCurrentModel(m);
-                }}
-                className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-              >
-                {MODELS.map((m) => (
-                  <option key={m.key} value={m.key}>
-                    {lang === "he" ? m.labels.he : m.labels.en}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <aside className="w-80 border-r border-border bg-card flex flex-col overflow-hidden shrink-0" dir={lang === "he" ? "rtl" : "ltr"}>
+            <div className="flex-1 overflow-y-auto scrollbar-thin">
+              {/* Model Select */}
+              <div className="px-3 py-2 border-b border-border">
+                <select
+                  value={currentModel.key}
+                  onChange={(e) => {
+                    const m = MODELS.find((m) => m.key === e.target.value);
+                    if (m) setCurrentModel(m);
+                  }}
+                  className="w-full bg-secondary border border-border rounded px-2 py-1.5 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                  {MODELS.map((m) => (
+                    <option key={m.key} value={m.key}>
+                      {lang === "he" ? m.labels.he : m.labels.en}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex gap-1 mt-1.5">
+                  <button onClick={() => setComposerOpen(true)} className="px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors flex items-center gap-1">
+                    <Puzzle className="w-3 h-3" /> {lang === "he" ? "קומפוזר" : "Composer"}
+                  </button>
+                </div>
+              </div>
 
-            <div className="p-3 border-b border-border">
-              <InfoBar />
-            </div>
+              {/* Info */}
+              <div className="px-3 py-2 border-b border-border">
+                <InfoBar />
+              </div>
 
-            <div className="p-3 border-b border-border">
-              <XRayPanel />
-            </div>
+              <Section title={lang === "he" ? "תצוגת רנטגן" : "X-Ray"} defaultOpen>
+                <XRayPanel />
+              </Section>
 
-            <div className="p-3 flex-1 overflow-hidden flex flex-col">
-              <h2 className="text-xs font-semibold mb-2">
-                {lang === "he" ? "שכבות" : "Structures"}
-              </h2>
-              <StructurePanel />
+              <Section title={lang === "he" ? "מצלמה" : "Camera Controls"} defaultOpen>
+                <CameraControls
+                  onZoomIn={handleZoomIn}
+                  onZoomOut={handleZoomOut}
+                  onResetView={handleResetView}
+                  onFocusSelected={handleFocusSelected}
+                  onSetAngle={handleSetAngle}
+                />
+              </Section>
+
+              <Section title={lang === "he" ? "שכבות" : "Structures"} defaultOpen>
+                <StructurePanel />
+              </Section>
+
+              <Section title={lang === "he" ? "הדמיה מקצועית" : "Professional Tools"}>
+                <ProToolsPanel />
+              </Section>
+
+              <Section title={lang === "he" ? "ניתוח ושכבות" : "Analysis & Layers"}>
+                <AnalysisPanel />
+              </Section>
+
+              <Section title={lang === "he" ? "מצב לימוד" : "Study Mode"}>
+                <StudyModePanel />
+              </Section>
+
+              <Section title={lang === "he" ? "כלים מתקדמים" : "Advanced Tools"}>
+                <AdvancedToolsPanel />
+              </Section>
+
+              <Section title="XYZ">
+                <XYZPanel />
+              </Section>
             </div>
           </aside>
         )}
       </div>
 
-      {/* Toggle sidebar button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed bottom-4 left-4 z-20 bg-card border border-border rounded-full p-2 shadow-lg hover:bg-accent transition-colors"
-        title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
-      >
-        <Settings className="w-4 h-4" />
-      </button>
+      {/* Footer */}
+      <footer className="px-4 py-1.5 border-t border-border bg-card text-[10px] text-muted-foreground text-center shrink-0">
+        Built with <a href="https://threejs.org/" target="_blank" rel="noopener" className="underline hover:text-foreground">three.js</a> · Models licensed under CC BY SA · <a href="https://anatomytool.org/open3dmodel" target="_blank" rel="noopener" className="underline hover:text-foreground">Open3DModel</a>
+      </footer>
+
+      {/* Dialogs */}
+      {partDetailsOpen && <PartDetailsDialog onClose={() => setPartDetailsOpen(false)} />}
+      {composerOpen && <ModelComposerDialog onClose={() => setComposerOpen(false)} />}
+      {themeSettingsOpen && <ThemeSettingsDialog onClose={() => setThemeSettingsOpen(false)} />}
     </div>
   );
 }

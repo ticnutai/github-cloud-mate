@@ -63,10 +63,10 @@ export default function StructurePanel() {
           </p>
         )}
         {filtered.map((mesh) => (
-          <button
+          <div
             key={mesh.name}
             onClick={() => setSelectedMesh(mesh.name === selectedMesh ? null : mesh.name)}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded text-right transition-colors ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded text-right transition-colors cursor-pointer ${
               mesh.name === selectedMesh
                 ? "bg-primary/20 border border-primary/40"
                 : "hover:bg-accent border border-transparent"
@@ -87,7 +87,7 @@ export default function StructurePanel() {
               )}
             </button>
             <span className="text-[11px] font-mono truncate">{mesh.name}</span>
-          </button>
+          </div>
         ))}
       </div>
     </div>
