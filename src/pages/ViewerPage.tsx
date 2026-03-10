@@ -117,6 +117,11 @@ export default function ViewerPage() {
     }
   }, []);
 
+  const handleLoadUploadedModel = useCallback((model: ModelEntry) => {
+    setCurrentModel(model);
+    useViewerStore.getState().setCurrentModelKey(model.key);
+  }, []);
+
   const camBtn = "p-2 rounded-xl border border-border bg-card/90 backdrop-blur-sm text-foreground hover:bg-accent hover:border-primary/50 transition-all shadow-md";
 
   return (
