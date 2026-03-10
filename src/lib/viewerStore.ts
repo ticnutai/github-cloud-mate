@@ -170,6 +170,8 @@ interface ViewerState {
   modelPosition: [number, number, number];
   setModelPosition: (p: [number, number, number]) => void;
   resetModelPosition: () => void;
+  dragMode: boolean;
+  toggleDragMode: () => void;
 }
 
 export const useViewerStore = create<ViewerState>((set, get) => ({
@@ -335,4 +337,6 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
   modelPosition: [0, 0, 0] as [number, number, number],
   setModelPosition: (p: [number, number, number]) => set({ modelPosition: p }),
   resetModelPosition: () => set({ modelPosition: [0, 0, 0] }),
+  dragMode: false,
+  toggleDragMode: () => set((s) => ({ dragMode: !s.dragMode })),
 }));

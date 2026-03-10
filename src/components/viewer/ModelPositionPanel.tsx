@@ -1,10 +1,10 @@
 import { useViewerStore } from "@/lib/viewerStore";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Hand } from "lucide-react";
 
 const AXES = [
-  { idx: 0, label: "X", color: "text-red-500" },
+  { idx: 0, label: "X", color: "text-destructive" },
   { idx: 1, label: "Y", color: "text-green-500" },
   { idx: 2, label: "Z", color: "text-blue-500" },
 ] as const;
@@ -17,6 +17,8 @@ export default function ModelPositionPanel() {
   const pos = useViewerStore((s) => s.modelPosition);
   const setPos = useViewerStore((s) => s.setModelPosition);
   const reset = useViewerStore((s) => s.resetModelPosition);
+  const dragMode = useViewerStore((s) => s.dragMode);
+  const toggleDrag = useViewerStore((s) => s.toggleDragMode);
   const isRtl = lang === "he";
 
   const update = (idx: number, val: number) => {
@@ -27,6 +29,25 @@ export default function ModelPositionPanel() {
 
   return (
     <div className="space-y-3">
+      {/* Drag toggle */}
+      <Button
+        variant={dragMode ? "default" : "outline"}
+        size="sm"
+        className="w-full text-xs gap-1.5"
+        onClick={toggleDrag}
+      >
+        <Hand className="w-3.5 h-3.5" />
+        {isRtl
+          ? dragMode ? "גרירה פעילה — לחץ לכבות" : "הפעל גרירה בעכבר"
+          : dragMode ? "Drag Active — Click to Disable" : "Enable Mouse Drag"}
+      </Button>
+
+      {dragMode && (
+        <p className="text-[10px] text-muted-foreground text-center">
+          {isRtl ? "גרור את המודל בסצנה על משטח XZ" : "Drag model on the XZ plane"}
+        </p>
+      )}
+
       {AXES.map(({ idx, label, color }) => (
         <div key={label} className="space-y-1">
           <div className="flex items-center justify-between gap-2">
