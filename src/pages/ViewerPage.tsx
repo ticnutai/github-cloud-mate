@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase, Move, ZoomIn, ZoomOut, RotateCcw, Crosshair } from "lucide-react";
+import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase, Move, ZoomIn, ZoomOut, RotateCcw, Crosshair, Upload } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, MODEL_CATEGORIES, type ModelEntry, type ModelCategory } from "@/lib/models";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -18,6 +18,7 @@ import DirectLibraryPanel from "@/components/viewer/DirectLibraryPanel";
 import CompareModelsPanel from "@/components/viewer/CompareModelsPanel";
 import WorkspaceProfiles from "@/components/viewer/WorkspaceProfiles";
 import ModelPositionPanel from "@/components/viewer/ModelPositionPanel";
+import ModelUploadPanel from "@/components/viewer/ModelUploadPanel";
 import PartDetailsDialog from "@/components/viewer/PartDetailsDialog";
 import ModelComposerDialog from "@/components/viewer/ModelComposerDialog";
 import ThemeSettingsDialog from "@/components/viewer/ThemeSettingsDialog";
@@ -114,6 +115,11 @@ export default function ViewerPage() {
       setCurrentModel(m);
       useViewerStore.getState().setCurrentModelKey(key);
     }
+  }, []);
+
+  const handleLoadUploadedModel = useCallback((model: ModelEntry) => {
+    setCurrentModel(model);
+    useViewerStore.getState().setCurrentModelKey(model.key);
   }, []);
 
   const camBtn = "p-2 rounded-xl border border-border bg-card/90 backdrop-blur-sm text-foreground hover:bg-accent hover:border-primary/50 transition-all shadow-md";
@@ -296,6 +302,9 @@ export default function ViewerPage() {
               <TabsContent value="library" className="mt-0">
                 <Section title={isRtl ? "ספריה ישירה" : "Quick Library"} icon={<Library className="w-4 h-4" />} defaultOpen>
                   <DirectLibraryPanel />
+                </Section>
+                <Section title={isRtl ? "העלאת מודלים" : "Upload Models"} icon={<Upload className="w-4 h-4" />}>
+                  <ModelUploadPanel onLoadModel={handleLoadUploadedModel} />
                 </Section>
                 <Section title={isRtl ? "השוואת מודלים" : "Compare"} icon={<GitCompare className="w-4 h-4" />}>
                   <CompareModelsPanel />
