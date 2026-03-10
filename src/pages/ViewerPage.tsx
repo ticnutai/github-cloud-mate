@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase, Move } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
@@ -58,11 +58,19 @@ export default function ViewerPage() {
   const setThemeSettingsOpen = useViewerStore((s) => s.setThemeSettingsOpen);
   const composerOpen = useViewerStore((s) => s.composerOpen);
   const setComposerOpen = useViewerStore((s) => s.setComposerOpen);
+  const dispatchCamera = useViewerStore((s) => s.dispatchCamera);
+  const currentModelKey = useViewerStore((s) => s.currentModelKey);
   const [floatingXYZ, setFloatingXYZ] = useState(false);
   const [debugConsole, setDebugConsole] = useState(false);
 
   const isRtl = lang === "he";
   const showSidebar = pinned ? sidebarVisible : (sidebarVisible && hovering) || (pinned && sidebarVisible);
+
+  // Sync store currentModelKey → currentModel
+  useEffect(() => {
+    const m = MODELS.find((m) => m.key === currentModelKey);
+    if (m && m.key !== currentModel.key) setCurrentModel(m);
+  }, [currentModelKey]);
 
   const handleMouseEnterEdge = useCallback(() => {
     if (!pinned) {
@@ -74,9 +82,7 @@ export default function ViewerPage() {
 
   const handleMouseLeaveSidebar = useCallback(() => {
     if (!pinned) {
-      hideTimerRef.current = setTimeout(() => {
-        setHovering(false);
-      }, 500);
+      hideTimerRef.current = setTimeout(() => setHovering(false), 500);
     }
   }, [pinned]);
 
@@ -94,18 +100,26 @@ export default function ViewerPage() {
     }
   }, [pinned]);
 
-  const handleZoomIn = useCallback(() => {}, []);
-  const handleZoomOut = useCallback(() => {}, []);
-  const handleResetView = useCallback(() => {}, []);
-  const handleFocusSelected = useCallback(() => {}, []);
-  const handleSetAngle = useCallback((_angle: "front" | "side" | "top") => {}, []);
+  // Camera controls — wired to store dispatcher
+  const handleZoomIn = useCallback(() => dispatchCamera("zoomIn"), [dispatchCamera]);
+  const handleZoomOut = useCallback(() => dispatchCamera("zoomOut"), [dispatchCamera]);
+  const handleResetView = useCallback(() => dispatchCamera("reset"), [dispatchCamera]);
+  const handleFocusSelected = useCallback(() => dispatchCamera("focus"), [dispatchCamera]);
+  const handleSetAngle = useCallback((angle: "front" | "side" | "top") => dispatchCamera(angle), [dispatchCamera]);
+
+  const handleModelChange = useCallback((key: string) => {
+    const m = MODELS.find((m) => m.key === key);
+    if (m) {
+      setCurrentModel(m);
+      useViewerStore.getState().setCurrentModelKey(key);
+    }
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden" dir="rtl">
-      {/* Header — Gold gradient border bottom */}
+      {/* Header */}
       <header className="flex items-center justify-between px-5 py-2.5 bg-card shrink-0 relative" style={{ borderBottom: '2px solid', borderImage: 'linear-gradient(90deg, hsl(43 80% 38%), hsl(43 74% 49%), hsl(43 60% 65%), hsl(43 74% 49%), hsl(43 80% 38%)) 1' }}>
         <div className="flex items-center gap-3">
-          {/* Logo area */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">3D</span>
@@ -143,15 +157,13 @@ export default function ViewerPage() {
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/90 backdrop-blur-sm">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 rounded-full border-[3px] border-gold/30 border-t-gold animate-spin" />
-                <span className="text-sm text-foreground font-medium">
-                  {isRtl ? "טוען מודל..." : "Loading model..."}
-                </span>
+                <span className="text-sm text-foreground font-medium">{isRtl ? "טוען מודל..." : "Loading model..."}</span>
               </div>
             </div>
           )}
           <SceneCanvas model={currentModel} />
 
-          {/* Floating action buttons — bottom left */}
+          {/* Floating action buttons */}
           <div className="absolute bottom-4 left-4 z-20 flex gap-2">
             <button
               onClick={() => setFloatingXYZ(!floatingXYZ)}
@@ -170,12 +182,9 @@ export default function ViewerPage() {
           </div>
         </div>
 
-        {/* Edge hover trigger for auto-hide */}
+        {/* Edge hover trigger */}
         {!pinned && !showSidebar && (
-          <div
-            className="absolute top-0 bottom-0 right-0 w-5 z-30 cursor-pointer flex items-center justify-center group"
-            onMouseEnter={handleMouseEnterEdge}
-          >
+          <div className="absolute top-0 bottom-0 right-0 w-5 z-30 cursor-pointer flex items-center justify-center group" onMouseEnter={handleMouseEnterEdge}>
             <div className="w-1 h-20 rounded-full bg-gold/40 group-hover:bg-gold group-hover:h-28 transition-all duration-300" />
           </div>
         )}
@@ -192,17 +201,12 @@ export default function ViewerPage() {
             <div className="px-4 py-3 border-b border-border/60 bg-gradient-to-l from-accent/50 to-transparent">
               <select
                 value={currentModel.key}
-                onChange={(e) => {
-                  const m = MODELS.find((m) => m.key === e.target.value);
-                  if (m) setCurrentModel(m);
-                }}
+                onChange={(e) => handleModelChange(e.target.value)}
                 className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-[11px] text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-gold/40 transition-shadow"
                 dir="rtl"
               >
                 {MODELS.map((m) => (
-                  <option key={m.key} value={m.key}>
-                    {isRtl ? m.labels.he : m.labels.en}
-                  </option>
+                  <option key={m.key} value={m.key}>{isRtl ? m.labels.he : m.labels.en}</option>
                 ))}
               </select>
               <div className="flex gap-1.5 mt-2">
@@ -222,13 +226,7 @@ export default function ViewerPage() {
             </Section>
 
             <Section title={isRtl ? "מצלמה" : "Camera Controls"} icon={<Camera className="w-3.5 h-3.5" />} defaultOpen>
-              <CameraControls
-                onZoomIn={handleZoomIn}
-                onZoomOut={handleZoomOut}
-                onResetView={handleResetView}
-                onFocusSelected={handleFocusSelected}
-                onSetAngle={handleSetAngle}
-              />
+              <CameraControls onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onResetView={handleResetView} onFocusSelected={handleFocusSelected} onSetAngle={handleSetAngle} />
             </Section>
 
             <Section title={isRtl ? "שכבות" : "Structures"} icon={<Layers className="w-3.5 h-3.5" />} defaultOpen>

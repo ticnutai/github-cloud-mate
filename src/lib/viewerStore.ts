@@ -9,7 +9,7 @@ export interface MeshInfo {
   favorite?: boolean;
 }
 
-export type AnimationType = "none" | "breathing" | "gait" | "presentation" | "explode";
+export type AnimationType = "none" | "breathing" | "gait" | "presentation" | "explode" | "heartbeat" | "bloodflow";
 export type SystemDemo = "heart" | "respiratory" | "circulatory" | "lymphatic" | "urinary" | "head";
 export type PerformanceMode = "balanced" | "max" | "quality";
 export type ProPreset = "custom" | "clinical" | "teaching" | "presentation";
@@ -172,6 +172,22 @@ interface ViewerState {
   resetModelPosition: () => void;
   dragMode: boolean;
   toggleDragMode: () => void;
+
+  // Camera actions
+  cameraAction: { type: string; payload?: any } | null;
+  dispatchCamera: (type: string, payload?: any) => void;
+
+  // Grid
+  gridVisible: boolean;
+  toggleGrid: () => void;
+
+  // Export
+  exportAction: string | null;
+  setExportAction: (a: string | null) => void;
+
+  // Current model key (for direct library)
+  currentModelKey: string;
+  setCurrentModelKey: (k: string) => void;
 }
 
 export const useViewerStore = create<ViewerState>((set, get) => ({
@@ -339,4 +355,16 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
   resetModelPosition: () => set({ modelPosition: [0, 0, 0] }),
   dragMode: false,
   toggleDragMode: () => set((s) => ({ dragMode: !s.dragMode })),
+
+  cameraAction: null,
+  dispatchCamera: (type, payload) => set({ cameraAction: { type, payload } }),
+
+  gridVisible: false,
+  toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
+
+  exportAction: null,
+  setExportAction: (a) => set({ exportAction: a }),
+
+  currentModelKey: "open3dmodel",
+  setCurrentModelKey: (k) => set({ currentModelKey: k }),
 }));

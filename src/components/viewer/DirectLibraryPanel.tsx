@@ -4,15 +4,17 @@ import { MODELS } from "@/lib/models";
 
 export default function DirectLibraryPanel() {
   const lang = useViewerStore((s) => s.lang);
+  const setCurrentModelKey = useViewerStore((s) => s.setCurrentModelKey);
+  const currentModelKey = useViewerStore((s) => s.currentModelKey);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const animations = [
     { name: lang === "he" ? "נשימה" : "Breathing", key: "breathing" },
+    { name: lang === "he" ? "פעימת לב" : "Heartbeat", key: "heartbeat" },
+    { name: lang === "he" ? "זרימת דם" : "Blood Flow", key: "bloodflow" },
     { name: lang === "he" ? "הליכה" : "Gait", key: "gait" },
     { name: lang === "he" ? "תצוגה היקפית" : "Presentation", key: "presentation" },
     { name: lang === "he" ? "פיצול שכבות" : "Explode", key: "explode" },
-    { name: lang === "he" ? "פעימת לב" : "Heartbeat", key: "heartbeat" },
-    { name: lang === "he" ? "זרימת דם" : "Blood Flow", key: "bloodflow" },
   ];
 
   const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
@@ -36,8 +38,14 @@ export default function DirectLibraryPanel() {
         <div>
           <h4 className="text-[10px] font-semibold text-muted-foreground mb-1.5">{lang === "he" ? "מודלים" : "Models"}</h4>
           <div className="flex flex-col gap-1 max-h-32 overflow-y-auto scrollbar-gold">
-            {MODELS.slice(0, 8).map((m) => (
-              <div key={m.key} className="text-[9px] px-2 py-1 bg-secondary/50 rounded hover:bg-accent/50 cursor-pointer transition-colors truncate">
+            {MODELS.map((m) => (
+              <div
+                key={m.key}
+                onClick={() => setCurrentModelKey(m.key)}
+                className={`text-[9px] px-2 py-1 rounded cursor-pointer transition-colors truncate ${
+                  currentModelKey === m.key ? "bg-primary/15 border border-gold/40 text-foreground" : "bg-secondary/50 hover:bg-accent/50"
+                }`}
+              >
                 {lang === "he" ? m.labels.he : m.labels.en}
               </div>
             ))}
