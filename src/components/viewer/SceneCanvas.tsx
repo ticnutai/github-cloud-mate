@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, Suspense, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { useViewerStore } from "@/lib/viewerStore";
@@ -85,6 +85,133 @@ function Model({ model }: ModelProps) {
   );
 }
 
+/** Stores original positions for explode animation */
+const originalPositions = new Map<string, THREE.Vector3>();
+const explodeDirections = new Map<string, THREE.Vector3>();
+
+function AnimationController() {
+  const { scene, camera } = useThree();
+  const animationType = useViewerStore((s) => s.animationType);
+  const animationPlaying = useViewerStore((s) => s.animationPlaying);
+  const animationSpeed = useViewerStore((s) => s.animationSpeed);
+  const timeRef = useRef(0);
+  const explodeInitialized = useRef(false);
+  const orbitAngleRef = useRef(0);
+  const originalScaleRef = useRef<THREE.Vector3 | null>(null);
+
+  // Store original positions on first encounter
+  useEffect(() => {
+    if (animationType === "explode" && !explodeInitialized.current) {
+      const center = new THREE.Vector3();
+      const box = new THREE.Box3().setFromObject(scene);
+      box.getCenter(center);
+
+      scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          if (!originalPositions.has(child.uuid)) {
+            originalPositions.set(child.uuid, child.position.clone());
+          }
+          // Direction from center to mesh
+          const meshCenter = new THREE.Vector3();
+          new THREE.Box3().setFromObject(child).getCenter(meshCenter);
+          const dir = meshCenter.sub(center).normalize();
+          if (dir.length() < 0.01) dir.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+          explodeDirections.set(child.uuid, dir);
+        }
+      });
+      explodeInitialized.current = true;
+    }
+
+    if (animationType !== "explode") {
+      explodeInitialized.current = false;
+    }
+  }, [animationType, scene]);
+
+  // Store original scale
+  useEffect(() => {
+    if (!originalScaleRef.current) {
+      originalScaleRef.current = scene.scale.clone();
+    }
+  }, [scene]);
+
+  // Reset everything when animation type changes to "none"
+  useEffect(() => {
+    if (animationType === "none") {
+      // Reset scale
+      if (originalScaleRef.current) {
+        scene.scale.copy(originalScaleRef.current);
+      }
+      // Reset explode positions
+      scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const orig = originalPositions.get(child.uuid);
+          if (orig) child.position.copy(orig);
+        }
+      });
+      timeRef.current = 0;
+      orbitAngleRef.current = 0;
+    }
+  }, [animationType, scene]);
+
+  useFrame((_, delta) => {
+    if (!animationPlaying || animationType === "none") return;
+
+    const speed = animationSpeed;
+    timeRef.current += delta * speed;
+    const t = timeRef.current;
+
+    if (animationType === "breathing") {
+      // Subtle scale pulse — breathing effect
+      const breathScale = 1 + Math.sin(t * 2) * 0.03;
+      const base = originalScaleRef.current || new THREE.Vector3(1, 1, 1);
+      scene.scale.set(
+        base.x * breathScale,
+        base.y * (1 + Math.sin(t * 2) * 0.05), // more Y movement for breathing
+        base.z * breathScale
+      );
+    }
+
+    if (animationType === "presentation") {
+      // Orbit camera around the model
+      orbitAngleRef.current += delta * speed * 0.5;
+      const angle = orbitAngleRef.current;
+      const box = new THREE.Box3().setFromObject(scene);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = (camera as THREE.PerspectiveCamera).fov * (Math.PI / 180);
+      const dist = maxDim / (2 * Math.tan(fov / 2)) * 1.5;
+
+      camera.position.set(
+        center.x + Math.sin(angle) * dist,
+        center.y + dist * 0.3,
+        center.z + Math.cos(angle) * dist
+      );
+      camera.lookAt(center);
+    }
+
+    if (animationType === "explode") {
+      // Explode meshes outward from center
+      const explodeFactor = (Math.sin(t * 0.8) * 0.5 + 0.5) * 0.15; // oscillate 0→0.15
+      scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const orig = originalPositions.get(child.uuid);
+          const dir = explodeDirections.get(child.uuid);
+          if (orig && dir) {
+            child.position.set(
+              orig.x + dir.x * explodeFactor,
+              orig.y + dir.y * explodeFactor,
+              orig.z + dir.z * explodeFactor
+            );
+          }
+        }
+      });
+    }
+  });
+
+  return null;
+}
+
 function AutoFit() {
   const { camera, scene } = useThree();
   useEffect(() => {
@@ -120,12 +247,19 @@ interface SceneCanvasProps {
 
 export default function SceneCanvas({ model }: SceneCanvasProps) {
   const setLoading = useViewerStore((s) => s.setLoading);
+  const animationType = useViewerStore((s) => s.animationType);
   const [key, setKey] = useState(0);
 
   useEffect(() => {
     setLoading(true);
+    // Clear stored positions when model changes
+    originalPositions.clear();
+    explodeDirections.clear();
     setKey((k) => k + 1);
   }, [model, setLoading]);
+
+  // Disable OrbitControls during presentation animation
+  const disableOrbit = animationType === "presentation" && useViewerStore.getState().animationPlaying;
 
   return (
     <div className="w-full h-full bg-black/90 rounded-lg overflow-hidden">
@@ -142,8 +276,9 @@ export default function SceneCanvas({ model }: SceneCanvasProps) {
         <Suspense fallback={<LoadingFallback />}>
           <Model model={model} />
           <AutoFit />
+          <AnimationController />
         </Suspense>
-        <OrbitControls makeDefault enableDamping dampingFactor={0.1} />
+        <OrbitControls makeDefault enableDamping dampingFactor={0.1} enabled={!disableOrbit} />
       </Canvas>
     </div>
   );
