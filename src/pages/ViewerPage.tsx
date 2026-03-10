@@ -265,6 +265,10 @@ export default function ViewerPage() {
             <Section title={isRtl ? "כיול XYZ" : "XYZ Calibration"} icon={<Move3D className="w-3.5 h-3.5" />}>
               <XYZPanel />
             </Section>
+
+            <Section title={isRtl ? "פרופילי Workspace" : "Workspace Profiles"} icon={<Briefcase className="w-3.5 h-3.5" />}>
+              <WorkspaceProfiles />
+            </Section>
           </div>
         </aside>
       </div>
