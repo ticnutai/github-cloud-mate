@@ -14,7 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      projects: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          repo_name: string
+          repo_owner: string
+          repo_url: string
+          status: string
+          synced_files: number | null
+          total_files: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          repo_name: string
+          repo_owner: string
+          repo_url: string
+          status?: string
+          synced_files?: number | null
+          total_files?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          repo_name?: string
+          repo_owner?: string
+          repo_url?: string
+          status?: string
+          synced_files?: number | null
+          total_files?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sync_files: {
+        Row: {
+          created_at: string
+          file_path: string
+          file_type: string
+          id: string
+          project_id: string
+          sha: string | null
+          size_bytes: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          file_type?: string
+          id?: string
+          project_id: string
+          sha?: string | null
+          size_bytes?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          file_type?: string
+          id?: string
+          project_id?: string
+          sha?: string | null
+          size_bytes?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
