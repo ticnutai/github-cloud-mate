@@ -172,6 +172,22 @@ interface ViewerState {
   resetModelPosition: () => void;
   dragMode: boolean;
   toggleDragMode: () => void;
+
+  // Camera actions
+  cameraAction: { type: string; payload?: any } | null;
+  dispatchCamera: (type: string, payload?: any) => void;
+
+  // Grid
+  gridVisible: boolean;
+  toggleGrid: () => void;
+
+  // Export
+  exportAction: string | null;
+  setExportAction: (a: string | null) => void;
+
+  // Current model key (for direct library)
+  currentModelKey: string;
+  setCurrentModelKey: (k: string) => void;
 }
 
 export const useViewerStore = create<ViewerState>((set, get) => ({
