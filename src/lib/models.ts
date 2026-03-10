@@ -1,11 +1,20 @@
 export const REPO_BASE = "https://raw.githubusercontent.com/ticnutai/open3d_website/main";
 
+export type ModelCategory = "anatomy" | "khronos" | "objects";
+
 export interface ModelEntry {
   key: string;
   path: string;
   labels: { he: string; en: string };
   mirror: boolean;
+  category: ModelCategory;
 }
+
+export const MODEL_CATEGORIES: Record<ModelCategory, { he: string; en: string }> = {
+  anatomy: { he: "🫀 אנטומיה", en: "🫀 Anatomy" },
+  khronos: { he: "🎭 Khronos / הדגמה", en: "🎭 Khronos / Demo" },
+  objects: { he: "🚗 רכבים ואובייקטים", en: "🚗 Vehicles & Objects" },
+};
 
 export const MODELS: ModelEntry[] = [
   // ── אנטומיה ──
