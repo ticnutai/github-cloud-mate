@@ -326,21 +326,20 @@ interface SceneCanvasProps {
 export default function SceneCanvas({ model }: SceneCanvasProps) {
   const setLoading = useViewerStore((s) => s.setLoading);
   const animationType = useViewerStore((s) => s.animationType);
+  const dragMode = useViewerStore((s) => s.dragMode);
   const [key, setKey] = useState(0);
 
   useEffect(() => {
     setLoading(true);
-    // Clear stored positions when model changes
     originalPositions.clear();
     explodeDirections.clear();
     setKey((k) => k + 1);
   }, [model, setLoading]);
 
-  // Disable OrbitControls during presentation animation
-  const disableOrbit = animationType === "presentation" && useViewerStore.getState().animationPlaying;
+  const disableOrbit = dragMode || (animationType === "presentation" && useViewerStore.getState().animationPlaying);
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-slate-50 via-white to-amber-50/30 overflow-hidden">
+    <div className="w-full h-full bg-gradient-to-br from-background via-background to-accent/10 overflow-hidden">
       <Canvas
         key={key}
         camera={{ position: [2, 1.5, 3], fov: 50 }}
@@ -355,6 +354,7 @@ export default function SceneCanvas({ model }: SceneCanvasProps) {
           <Model model={model} />
           <AutoFit />
           <AnimationController />
+          <DragController />
         </Suspense>
         <OrbitControls makeDefault enableDamping dampingFactor={0.1} enabled={!disableOrbit} />
       </Canvas>
