@@ -1,7 +1,10 @@
+import { useEffect } from "react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { RotateCcw, Hand } from "lucide-react";
+
+const STORAGE_KEY = "open3d-model-position";
 
 const AXES = [
   { idx: 0, label: "X", color: "text-destructive" },
