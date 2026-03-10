@@ -67,6 +67,14 @@ function Model({ model }: ModelProps) {
     if (e.object?.name) setSelectedMesh(e.object.name);
   }, [setSelectedMesh]);
 
+  const handleDoubleClick = useCallback((e: any) => {
+    e.stopPropagation();
+    if (e.object?.name) {
+      setSelectedMesh(e.object.name);
+      useViewerStore.getState().setPartDetailsOpen(true);
+    }
+  }, [setSelectedMesh]);
+
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation();
     if (e.object?.name) setHoveredMesh(e.object.name);
@@ -80,12 +88,16 @@ function Model({ model }: ModelProps) {
         ref={groupRef}
         object={scene}
         onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       />
     </group>
   );
 }
+
+// ─── Original materials backup for highlight restore ───
+const originalMaterials = new Map<string, { color: THREE.Color; opacity: number; transparent: boolean }>();
 
 // ─── Highlight Controller ───
 function HighlightController() {
@@ -98,17 +110,39 @@ function HighlightController() {
       if (!(child as THREE.Mesh).isMesh) return;
       const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
       if (!mat.emissive) return;
+
+      // Backup original material properties once
+      if (!originalMaterials.has(child.uuid)) {
+        originalMaterials.set(child.uuid, {
+          color: mat.color.clone(),
+          opacity: mat.opacity,
+          transparent: mat.transparent,
+        });
+      }
       const orig = originalEmissive.get(child.uuid);
+      const origMat = originalMaterials.get(child.uuid);
 
       if (child.name === selectedMesh) {
-        mat.emissive.setHex(0xcc9900);
-        mat.emissiveIntensity = 0.5;
+        // Strong gold highlight - emissive + color tint
+        mat.emissive.setHex(0xffaa00);
+        mat.emissiveIntensity = 0.8;
+        // Also slightly tint the diffuse color for extra visibility
+        if (origMat) {
+          mat.color.copy(origMat.color).lerp(new THREE.Color(0xffcc33), 0.3);
+        }
       } else if (child.name === hoveredMesh) {
-        mat.emissive.setHex(0x3388ff);
-        mat.emissiveIntensity = 0.25;
+        // Blue hover highlight
+        mat.emissive.setHex(0x4499ff);
+        mat.emissiveIntensity = 0.5;
+        if (origMat) {
+          mat.color.copy(origMat.color).lerp(new THREE.Color(0x88bbff), 0.15);
+        }
       } else if (orig) {
         mat.emissive.copy(orig.color);
         mat.emissiveIntensity = orig.intensity;
+        if (origMat) {
+          mat.color.copy(origMat.color);
+        }
       }
     });
   }, [selectedMesh, hoveredMesh, scene]);
@@ -573,6 +607,7 @@ export default function SceneCanvas({ model }: SceneCanvasProps) {
     originalPositions.clear();
     explodeDirections.clear();
     originalEmissive.clear();
+    originalMaterials.clear();
     setKey((k) => k + 1);
   }, [model, setLoading]);
 
