@@ -61,6 +61,8 @@ export default function PartDetailsDialog({ onClose }: PartDetailsDialogProps) {
     { id: "relations", label: lang === "he" ? "קשרים" : "Relations" },
   ];
 
+  if (!mesh || !pos || !rot || !scl) return null;
+
   const btn = "px-3 py-1.5 text-[10px] bg-secondary border border-border rounded-lg hover:bg-accent transition-colors";
   const cell = "bg-secondary/50 rounded-lg p-2.5";
   const cellLabel = "text-[9px] text-muted-foreground block";
