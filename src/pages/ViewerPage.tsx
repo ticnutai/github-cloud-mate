@@ -263,6 +263,10 @@ export default function ViewerPage() {
               <CompareModelsPanel />
             </Section>
 
+            <Section title={isRtl ? "הזזת מודל" : "Move Model"} icon={<Move className="w-3.5 h-3.5" />}>
+              <ModelPositionPanel />
+            </Section>
+
             <Section title={isRtl ? "כיול XYZ" : "XYZ Calibration"} icon={<Move3D className="w-3.5 h-3.5" />}>
               <XYZPanel />
             </Section>
