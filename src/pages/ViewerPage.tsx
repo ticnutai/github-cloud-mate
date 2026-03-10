@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree } from "lucide-react";
+import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
@@ -15,10 +15,13 @@ import XYZPanel from "@/components/viewer/XYZPanel";
 import LayerManagerPanel from "@/components/viewer/LayerManagerPanel";
 import DirectLibraryPanel from "@/components/viewer/DirectLibraryPanel";
 import CompareModelsPanel from "@/components/viewer/CompareModelsPanel";
+import WorkspaceProfiles from "@/components/viewer/WorkspaceProfiles";
 import PartDetailsDialog from "@/components/viewer/PartDetailsDialog";
 import ModelComposerDialog from "@/components/viewer/ModelComposerDialog";
 import ThemeSettingsDialog from "@/components/viewer/ThemeSettingsDialog";
 import AnimationsGalleryDialog from "@/components/viewer/AnimationsGalleryDialog";
+import FloatingXYZDialog from "@/components/viewer/FloatingXYZDialog";
+import DebugConsole from "@/components/viewer/DebugConsole";
 
 function Section({ title, icon, defaultOpen = false, children }: { title: string; icon?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -54,6 +57,8 @@ export default function ViewerPage() {
   const setThemeSettingsOpen = useViewerStore((s) => s.setThemeSettingsOpen);
   const composerOpen = useViewerStore((s) => s.composerOpen);
   const setComposerOpen = useViewerStore((s) => s.setComposerOpen);
+  const [floatingXYZ, setFloatingXYZ] = useState(false);
+  const [debugConsole, setDebugConsole] = useState(false);
 
   const isRtl = lang === "he";
   const showSidebar = pinned ? sidebarVisible : (sidebarVisible && hovering) || (pinned && sidebarVisible);
@@ -144,6 +149,24 @@ export default function ViewerPage() {
             </div>
           )}
           <SceneCanvas model={currentModel} />
+
+          {/* Floating action buttons — bottom left */}
+          <div className="absolute bottom-4 left-4 z-20 flex gap-2">
+            <button
+              onClick={() => setFloatingXYZ(!floatingXYZ)}
+              className={`p-2.5 rounded-xl border-2 shadow-lg transition-all duration-200 ${floatingXYZ ? "border-gold bg-gold/15 text-gold-dark" : "border-border bg-card/90 backdrop-blur text-foreground hover:border-gold/50"}`}
+              title={isRtl ? "ג'ויסטיק XYZ" : "XYZ Joystick"}
+            >
+              <Gamepad2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setDebugConsole(!debugConsole)}
+              className={`p-2.5 rounded-xl border-2 shadow-lg transition-all duration-200 ${debugConsole ? "border-green-500 bg-green-500/15 text-green-600" : "border-border bg-card/90 backdrop-blur text-foreground hover:border-green-500/50"}`}
+              title="Debug Console"
+            >
+              <Bug className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Edge hover trigger for auto-hide */}
@@ -242,6 +265,10 @@ export default function ViewerPage() {
             <Section title={isRtl ? "כיול XYZ" : "XYZ Calibration"} icon={<Move3D className="w-3.5 h-3.5" />}>
               <XYZPanel />
             </Section>
+
+            <Section title={isRtl ? "פרופילי Workspace" : "Workspace Profiles"} icon={<Briefcase className="w-3.5 h-3.5" />}>
+              <WorkspaceProfiles />
+            </Section>
           </div>
         </aside>
       </div>
@@ -256,6 +283,8 @@ export default function ViewerPage() {
       {composerOpen && <ModelComposerDialog onClose={() => setComposerOpen(false)} />}
       {themeSettingsOpen && <ThemeSettingsDialog onClose={() => setThemeSettingsOpen(false)} />}
       {useViewerStore.getState().animGalleryOpen && <AnimationsGalleryDialog onClose={() => useViewerStore.getState().setAnimGalleryOpen(false)} />}
+      {floatingXYZ && <FloatingXYZDialog onClose={() => setFloatingXYZ(false)} />}
+      {debugConsole && <DebugConsole onClose={() => setDebugConsole(false)} />}
     </div>
   );
 }
