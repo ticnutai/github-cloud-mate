@@ -44,20 +44,22 @@ function Model({ model }: ModelProps) {
     setMeshes(meshInfos);
   }, [scene, setMeshes, setLoading]);
 
-  // X-ray effect
+  // X-ray effect — handles both single and array materials
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
-        if (xrayEnabled) {
-          mat.transparent = true;
-          mat.opacity = child.name === selectedMesh ? 1 : xrayOpacity;
-          mat.depthWrite = child.name === selectedMesh;
-        } else {
-          mat.transparent = false;
-          mat.opacity = 1;
-          mat.depthWrite = true;
-        }
+        const mats = getMaterials(child as THREE.Mesh);
+        mats.forEach((mat) => {
+          if (xrayEnabled) {
+            mat.transparent = true;
+            mat.opacity = child.name === selectedMesh ? 1 : xrayOpacity;
+            mat.depthWrite = child.name === selectedMesh;
+          } else {
+            mat.transparent = false;
+            mat.opacity = 1;
+            mat.depthWrite = true;
+          }
+        });
       }
     });
   }, [xrayEnabled, xrayOpacity, selectedMesh, scene]);
