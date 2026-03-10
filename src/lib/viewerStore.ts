@@ -165,6 +165,11 @@ interface ViewerState {
   // Clinical tour
   clinicalTourActive: boolean;
   setClinicalTourActive: (a: boolean) => void;
+
+  // Model position
+  modelPosition: [number, number, number];
+  setModelPosition: (p: [number, number, number]) => void;
+  resetModelPosition: () => void;
 }
 
 export const useViewerStore = create<ViewerState>((set, get) => ({
@@ -326,4 +331,8 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
 
   clinicalTourActive: false,
   setClinicalTourActive: (a) => set({ clinicalTourActive: a }),
+
+  modelPosition: [0, 0, 0] as [number, number, number],
+  setModelPosition: (p: [number, number, number]) => set({ modelPosition: p }),
+  resetModelPosition: () => set({ modelPosition: [0, 0, 0] }),
 }));

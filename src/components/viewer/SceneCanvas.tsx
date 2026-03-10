@@ -74,14 +74,18 @@ function Model({ model }: ModelProps) {
     setHoveredMesh(null);
   }, [setHoveredMesh]);
 
+  const modelPosition = useViewerStore((s) => s.modelPosition);
+
   return (
-    <primitive
-      ref={groupRef}
-      object={scene}
-      onClick={handleClick}
-      onPointerOver={handlePointerOver}
-      onPointerOut={handlePointerOut}
-    />
+    <group position={modelPosition}>
+      <primitive
+        ref={groupRef}
+        object={scene}
+        onClick={handleClick}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+      />
+    </group>
   );
 }
 

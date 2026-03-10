@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase } from "lucide-react";
+import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase, Move } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
@@ -16,6 +16,7 @@ import LayerManagerPanel from "@/components/viewer/LayerManagerPanel";
 import DirectLibraryPanel from "@/components/viewer/DirectLibraryPanel";
 import CompareModelsPanel from "@/components/viewer/CompareModelsPanel";
 import WorkspaceProfiles from "@/components/viewer/WorkspaceProfiles";
+import ModelPositionPanel from "@/components/viewer/ModelPositionPanel";
 import PartDetailsDialog from "@/components/viewer/PartDetailsDialog";
 import ModelComposerDialog from "@/components/viewer/ModelComposerDialog";
 import ThemeSettingsDialog from "@/components/viewer/ThemeSettingsDialog";
@@ -260,6 +261,10 @@ export default function ViewerPage() {
 
             <Section title={isRtl ? "השוואת מודלים" : "Compare Models"} icon={<GitCompare className="w-3.5 h-3.5" />}>
               <CompareModelsPanel />
+            </Section>
+
+            <Section title={isRtl ? "הזזת מודל" : "Move Model"} icon={<Move className="w-3.5 h-3.5" />}>
+              <ModelPositionPanel />
             </Section>
 
             <Section title={isRtl ? "כיול XYZ" : "XYZ Calibration"} icon={<Move3D className="w-3.5 h-3.5" />}>
