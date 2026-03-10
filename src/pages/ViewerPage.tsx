@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase, Move } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
 import StructurePanel from "@/components/viewer/StructurePanel";
 import XRayPanel from "@/components/viewer/XRayPanel";
@@ -27,17 +28,18 @@ import DebugConsole from "@/components/viewer/DebugConsole";
 function Section({ title, icon, defaultOpen = false, children }: { title: string; icon?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-border/60">
+    <div className="border-b border-border/40">
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center w-full px-4 py-2.5 transition-all duration-200 gap-2.5 group ${open ? "bg-accent/40" : "hover:bg-accent/30"}`}
+        className={`flex items-center w-full px-4 py-3 transition-all duration-200 gap-3 group relative ${open ? "bg-accent/40" : "hover:bg-accent/20"}`}
       >
-        {icon && <span className="text-gold-dark shrink-0">{icon}</span>}
-        <span className="text-[11px] font-semibold flex-1 text-right text-foreground">{title}</span>
-        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? "" : "-rotate-90"}`} />
+        {open && <div className="absolute top-1 bottom-1 right-0 w-[3px] rounded-l-full bg-primary" />}
+        {icon && <span className="text-primary shrink-0">{icon}</span>}
+        <span className="text-xs font-semibold flex-1 text-right text-foreground">{title}</span>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? "" : "-rotate-90"}`} />
       </button>
       <div className={`overflow-hidden transition-all duration-200 ${open ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"}`}>
-        <div className="px-4 pb-3 pt-1 animate-fade-in">{children}</div>
+        <div className="px-4 pb-4 pt-2 animate-fade-in">{children}</div>
       </div>
     </div>
   );
@@ -48,6 +50,7 @@ export default function ViewerPage() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [pinned, setPinned] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [activeTab, setActiveTab] = useState("view");
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lang = useViewerStore((s) => s.lang);
   const toggleLang = useViewerStore((s) => s.toggleLang);
@@ -66,7 +69,6 @@ export default function ViewerPage() {
   const isRtl = lang === "he";
   const showSidebar = pinned ? sidebarVisible : (sidebarVisible && hovering) || (pinned && sidebarVisible);
 
-  // Sync store currentModelKey → currentModel
   useEffect(() => {
     const m = MODELS.find((m) => m.key === currentModelKey);
     if (m && m.key !== currentModel.key) setCurrentModel(m);
@@ -100,7 +102,6 @@ export default function ViewerPage() {
     }
   }, [pinned]);
 
-  // Camera controls — wired to store dispatcher
   const handleZoomIn = useCallback(() => dispatchCamera("zoomIn"), [dispatchCamera]);
   const handleZoomOut = useCallback(() => dispatchCamera("zoomOut"), [dispatchCamera]);
   const handleResetView = useCallback(() => dispatchCamera("reset"), [dispatchCamera]);
@@ -136,7 +137,7 @@ export default function ViewerPage() {
           </button>
           <button
             onClick={() => setPinned(!pinned)}
-            className={`p-2 rounded-lg transition-all duration-200 ${pinned ? "bg-gold/15 text-gold-dark ring-1 ring-gold/30" : "hover:bg-accent text-muted-foreground"}`}
+            className={`p-2 rounded-lg transition-all duration-200 ${pinned ? "bg-primary/15 text-primary ring-1 ring-primary/30" : "hover:bg-accent text-muted-foreground"}`}
             title={pinned ? "ביטול נעיצה — אוטו-הסתרה" : "נעץ סיידבר"}
           >
             {pinned ? <Pin className="w-4 h-4" /> : <PinOff className="w-4 h-4" />}
@@ -156,7 +157,7 @@ export default function ViewerPage() {
           {loading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/90 backdrop-blur-sm">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 rounded-full border-[3px] border-gold/30 border-t-gold animate-spin" />
+                <div className="w-12 h-12 rounded-full border-[3px] border-primary/30 border-t-primary animate-spin" />
                 <span className="text-sm text-foreground font-medium">{isRtl ? "טוען מודל..." : "Loading model..."}</span>
               </div>
             </div>
@@ -167,7 +168,7 @@ export default function ViewerPage() {
           <div className="absolute bottom-4 left-4 z-20 flex gap-2">
             <button
               onClick={() => setFloatingXYZ(!floatingXYZ)}
-              className={`p-2.5 rounded-xl border-2 shadow-lg transition-all duration-200 ${floatingXYZ ? "border-gold bg-gold/15 text-gold-dark" : "border-border bg-card/90 backdrop-blur text-foreground hover:border-gold/50"}`}
+              className={`p-2.5 rounded-xl border-2 shadow-lg transition-all duration-200 ${floatingXYZ ? "border-primary bg-primary/15 text-primary" : "border-border bg-card/90 backdrop-blur text-foreground hover:border-primary/50"}`}
               title={isRtl ? "ג'ויסטיק XYZ" : "XYZ Joystick"}
             >
               <Gamepad2 className="w-4 h-4" />
@@ -185,100 +186,118 @@ export default function ViewerPage() {
         {/* Edge hover trigger */}
         {!pinned && !showSidebar && (
           <div className="absolute top-0 bottom-0 right-0 w-5 z-30 cursor-pointer flex items-center justify-center group" onMouseEnter={handleMouseEnterEdge}>
-            <div className="w-1 h-20 rounded-full bg-gold/40 group-hover:bg-gold group-hover:h-28 transition-all duration-300" />
+            <div className="w-1 h-20 rounded-full bg-primary/40 group-hover:bg-primary group-hover:h-28 transition-all duration-300" />
           </div>
         )}
 
         {/* Sidebar */}
         <aside
-          className={`bg-card flex flex-col overflow-hidden shrink-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-20 ${showSidebar ? "w-80 opacity-100" : "w-0 opacity-0"} ${!pinned && showSidebar ? "absolute top-0 bottom-0 right-0 sidebar-shadow" : ""}`}
+          className={`bg-card flex flex-col overflow-hidden shrink-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-20 ${showSidebar ? "w-[340px] opacity-100" : "w-0 opacity-0"} ${!pinned && showSidebar ? "absolute top-0 bottom-0 right-0 sidebar-shadow" : ""}`}
           style={showSidebar ? { borderLeft: '2px solid', borderImage: 'linear-gradient(180deg, hsl(43 80% 38%), hsl(43 74% 49%), hsl(43 60% 65%)) 1' } : { border: 'none' }}
           onMouseEnter={handleMouseEnterSidebar}
           onMouseLeave={handleMouseLeaveSidebar}
         >
-          <div className="flex-1 overflow-y-auto scrollbar-gold w-80">
-            {/* Sidebar Header */}
+          <div className="flex-1 overflow-y-auto scrollbar-gold w-[340px]">
+            {/* Sidebar Header — Model selector + InfoBar */}
             <div className="px-4 py-3 border-b border-border/60 bg-gradient-to-l from-accent/50 to-transparent">
               <select
                 value={currentModel.key}
                 onChange={(e) => handleModelChange(e.target.value)}
-                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-[11px] text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-gold/40 transition-shadow"
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-xs text-foreground font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
                 dir="rtl"
               >
                 {MODELS.map((m) => (
                   <option key={m.key} value={m.key}>{isRtl ? m.labels.he : m.labels.en}</option>
                 ))}
               </select>
-              <div className="flex gap-1.5 mt-2">
-                <button onClick={() => setComposerOpen(true)} className="px-3 py-1.5 text-[10px] font-medium bg-secondary border border-border rounded-lg hover:bg-accent hover:border-gold/40 transition-all flex items-center gap-1.5">
-                  <Puzzle className="w-3 h-3 text-gold-dark" /> קומפוזר
+              <div className="flex gap-2 mt-2.5">
+                <button onClick={() => setComposerOpen(true)} className="px-3 py-2 text-xs font-medium bg-secondary border border-border rounded-lg hover:bg-accent hover:border-primary/40 transition-all flex items-center gap-2">
+                  <Puzzle className="w-4 h-4 text-primary" /> {isRtl ? "קומפוזר" : "Composer"}
                 </button>
+              </div>
+              {/* Inline InfoBar */}
+              <div className="mt-2.5">
+                <InfoBar />
               </div>
             </div>
 
-            {/* Info */}
-            <div className="px-4 py-2.5 border-b border-border/60">
-              <InfoBar />
-            </div>
+            {/* Tab Navigation */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl" className="w-full">
+              <div className="px-2 pt-2 pb-0 sticky top-0 z-10 bg-card">
+                <TabsList className="w-full h-10 bg-secondary/60 rounded-lg p-1 gap-1">
+                  <TabsTrigger value="view" className="flex-1 text-xs font-semibold gap-1.5 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md py-2">
+                    <Eye className="w-4 h-4" />
+                    {isRtl ? "תצוגה" : "View"}
+                  </TabsTrigger>
+                  <TabsTrigger value="tools" className="flex-1 text-xs font-semibold gap-1.5 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md py-2">
+                    <Wrench className="w-4 h-4" />
+                    {isRtl ? "כלים" : "Tools"}
+                  </TabsTrigger>
+                  <TabsTrigger value="library" className="flex-1 text-xs font-semibold gap-1.5 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md py-2">
+                    <Library className="w-4 h-4" />
+                    {isRtl ? "ספריה" : "Library"}
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-            <Section title={isRtl ? "תצוגת רנטגן" : "X-Ray"} icon={<Eye className="w-3.5 h-3.5" />} defaultOpen>
-              <XRayPanel />
-            </Section>
+              {/* VIEW TAB */}
+              <TabsContent value="view" className="mt-0">
+                <Section title={isRtl ? "תצוגת רנטגן" : "X-Ray"} icon={<Eye className="w-4 h-4" />} defaultOpen>
+                  <XRayPanel />
+                </Section>
+                <Section title={isRtl ? "מצלמה" : "Camera"} icon={<Camera className="w-4 h-4" />} defaultOpen>
+                  <CameraControls onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onResetView={handleResetView} onFocusSelected={handleFocusSelected} onSetAngle={handleSetAngle} />
+                </Section>
+                <Section title={isRtl ? "מבנים ושכבות" : "Structures"} icon={<Layers className="w-4 h-4" />} defaultOpen>
+                  <StructurePanel />
+                </Section>
+              </TabsContent>
 
-            <Section title={isRtl ? "מצלמה" : "Camera Controls"} icon={<Camera className="w-3.5 h-3.5" />} defaultOpen>
-              <CameraControls onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onResetView={handleResetView} onFocusSelected={handleFocusSelected} onSetAngle={handleSetAngle} />
-            </Section>
+              {/* TOOLS TAB */}
+              <TabsContent value="tools" className="mt-0">
+                <Section title={isRtl ? "הדמיה מקצועית" : "Professional"} icon={<Stethoscope className="w-4 h-4" />} defaultOpen>
+                  <ProToolsPanel />
+                </Section>
+                <Section title={isRtl ? "ניתוח ושכבות" : "Analysis"} icon={<Scan className="w-4 h-4" />}>
+                  <AnalysisPanel />
+                </Section>
+                <Section title={isRtl ? "כלים מתקדמים" : "Advanced"} icon={<Wrench className="w-4 h-4" />}>
+                  <AdvancedToolsPanel />
+                </Section>
+                <Section title={isRtl ? "הזזת מודל" : "Move Model"} icon={<Move className="w-4 h-4" />}>
+                  <ModelPositionPanel />
+                </Section>
+                <Section title={isRtl ? "כיול XYZ" : "XYZ Calibration"} icon={<Move3D className="w-4 h-4" />}>
+                  <XYZPanel />
+                </Section>
+                <Section title={isRtl ? "מצב לימוד" : "Study Mode"} icon={<BookOpen className="w-4 h-4" />}>
+                  <StudyModePanel />
+                </Section>
+              </TabsContent>
 
-            <Section title={isRtl ? "שכבות" : "Structures"} icon={<Layers className="w-3.5 h-3.5" />} defaultOpen>
-              <StructurePanel />
-            </Section>
-
-            <Section title={isRtl ? "הדמיה מקצועית" : "Professional Tools"} icon={<Stethoscope className="w-3.5 h-3.5" />}>
-              <ProToolsPanel />
-            </Section>
-
-            <Section title={isRtl ? "ניתוח ושכבות" : "Analysis & Layers"} icon={<Scan className="w-3.5 h-3.5" />}>
-              <AnalysisPanel />
-            </Section>
-
-            <Section title={isRtl ? "מצב לימוד" : "Study Mode"} icon={<BookOpen className="w-3.5 h-3.5" />}>
-              <StudyModePanel />
-            </Section>
-
-            <Section title={isRtl ? "כלים מתקדמים" : "Advanced Tools"} icon={<Wrench className="w-3.5 h-3.5" />}>
-              <AdvancedToolsPanel />
-            </Section>
-
-            <Section title={isRtl ? "עורך שכבות" : "Layer Manager"} icon={<FolderTree className="w-3.5 h-3.5" />}>
-              <LayerManagerPanel />
-            </Section>
-
-            <Section title={isRtl ? "ספריה ישירה" : "Quick Library"} icon={<Library className="w-3.5 h-3.5" />}>
-              <DirectLibraryPanel />
-            </Section>
-
-            <Section title={isRtl ? "השוואת מודלים" : "Compare Models"} icon={<GitCompare className="w-3.5 h-3.5" />}>
-              <CompareModelsPanel />
-            </Section>
-
-            <Section title={isRtl ? "הזזת מודל" : "Move Model"} icon={<Move className="w-3.5 h-3.5" />}>
-              <ModelPositionPanel />
-            </Section>
-
-            <Section title={isRtl ? "כיול XYZ" : "XYZ Calibration"} icon={<Move3D className="w-3.5 h-3.5" />}>
-              <XYZPanel />
-            </Section>
-
-            <Section title={isRtl ? "פרופילי Workspace" : "Workspace Profiles"} icon={<Briefcase className="w-3.5 h-3.5" />}>
-              <WorkspaceProfiles />
-            </Section>
+              {/* LIBRARY TAB */}
+              <TabsContent value="library" className="mt-0">
+                <Section title={isRtl ? "ספריה ישירה" : "Quick Library"} icon={<Library className="w-4 h-4" />} defaultOpen>
+                  <DirectLibraryPanel />
+                </Section>
+                <Section title={isRtl ? "השוואת מודלים" : "Compare"} icon={<GitCompare className="w-4 h-4" />}>
+                  <CompareModelsPanel />
+                </Section>
+                <Section title={isRtl ? "עורך שכבות" : "Layer Editor"} icon={<FolderTree className="w-4 h-4" />}>
+                  <LayerManagerPanel />
+                </Section>
+                <Section title={isRtl ? "פרופילי Workspace" : "Profiles"} icon={<Briefcase className="w-4 h-4" />}>
+                  <WorkspaceProfiles />
+                </Section>
+              </TabsContent>
+            </Tabs>
           </div>
         </aside>
       </div>
 
       {/* Footer */}
       <footer className="px-5 py-1.5 bg-card text-[10px] text-muted-foreground text-center shrink-0" style={{ borderTop: '1px solid hsl(43 50% 72%)' }}>
-        Built with <a href="https://threejs.org/" target="_blank" rel="noopener" className="underline hover:text-gold-dark transition-colors">three.js</a> · Models licensed under CC BY SA · <a href="https://anatomytool.org/open3dmodel" target="_blank" rel="noopener" className="underline hover:text-gold-dark transition-colors">Open3DModel</a>
+        Built with <a href="https://threejs.org/" target="_blank" rel="noopener" className="underline hover:text-primary transition-colors">three.js</a> · Models licensed under CC BY SA · <a href="https://anatomytool.org/open3dmodel" target="_blank" rel="noopener" className="underline hover:text-primary transition-colors">Open3DModel</a>
       </footer>
 
       {/* Dialogs */}

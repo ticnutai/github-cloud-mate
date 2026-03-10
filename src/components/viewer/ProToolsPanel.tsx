@@ -37,15 +37,14 @@ export default function ProToolsPanel() {
   const meshes = useViewerStore((s) => s.meshes);
   const showAll = useViewerStore((s) => s.showAll);
 
-  const label = "text-[10px] text-muted-foreground";
-  const select = "w-full bg-secondary border border-border rounded px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring";
-  const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
-  const toggle = "flex items-center gap-2 cursor-pointer text-[11px]";
-  const status = "text-[10px] text-muted-foreground bg-secondary/50 rounded px-2 py-1";
+  const label = "text-xs text-muted-foreground font-medium";
+  const select = "w-full bg-secondary border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40";
+  const btn = "px-3 py-2 text-xs bg-secondary border border-border rounded-lg hover:bg-accent transition-colors font-medium";
+  const toggle = "flex items-center gap-2.5 cursor-pointer text-xs";
+  const status = "text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2";
 
   const handleStartSystemDemo = () => {
     setSystemDemoActive(true);
-    // Isolate relevant parts
     const keywords = systemDemoKeywords[systemDemo] || [];
     meshes.forEach((m) => {
       const match = keywords.some((kw) => m.name.toLowerCase().includes(kw));
@@ -57,7 +56,6 @@ export default function ProToolsPanel() {
         visible: keywords.some((kw) => m.name.toLowerCase().includes(kw)),
       })),
     });
-    // Start breathing animation on the isolated system
     setAnimationType("breathing");
     setAnimationPlaying(true);
   };
@@ -69,7 +67,6 @@ export default function ProToolsPanel() {
     setAnimationPlaying(false);
   };
 
-  // Pro presets apply a combination of settings
   const applyPreset = (preset: ProPreset) => {
     setProPreset(preset);
     if (preset === "clinical") {
@@ -86,11 +83,9 @@ export default function ProToolsPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="text-xs font-semibold">{lang === "he" ? "הדמיה מקצועית" : "Professional Visualization"}</div>
-
+    <div className="flex flex-col gap-3.5">
       {/* Pro Preset */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-1.5">
         <span className={label}>{lang === "he" ? "פריסט" : "Preset"}</span>
         <select value={proPreset} onChange={(e) => applyPreset(e.target.value as ProPreset)} className={select}>
           <option value="custom">{lang === "he" ? "מותאם אישית" : "Custom"}</option>
@@ -102,16 +97,16 @@ export default function ProToolsPanel() {
 
       {/* Toggles */}
       <label className={toggle}>
-        <input type="checkbox" checked={realisticMode} onChange={toggleRealisticMode} className="accent-primary w-3 h-3" />
+        <input type="checkbox" checked={realisticMode} onChange={toggleRealisticMode} className="accent-primary w-4 h-4" />
         {lang === "he" ? "מצב ריאליסטי" : "Realistic Mode"}
       </label>
       <label className={toggle}>
-        <input type="checkbox" checked={humanScale} onChange={toggleHumanScale} className="accent-primary w-3 h-3" />
+        <input type="checkbox" checked={humanScale} onChange={toggleHumanScale} className="accent-primary w-4 h-4" />
         {lang === "he" ? "קנה מידה אנושי (1:1)" : "Human Scale (1:1)"}
       </label>
 
       {/* Animation */}
-      <div>
+      <div className="flex flex-col gap-1.5">
         <span className={label}>{lang === "he" ? "אנימציית המחשה" : "Activity Animation"}</span>
         <select value={animationType} onChange={(e) => setAnimationType(e.target.value as AnimationType)} className={select}>
           <option value="none">{lang === "he" ? "ללא" : "None"}</option>
@@ -124,27 +119,27 @@ export default function ProToolsPanel() {
         </select>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <span className={label}>{lang === "he" ? "מהירות" : "Speed"}</span>
-        <input type="range" min="0.5" max="2.5" step="0.1" value={animationSpeed} onChange={(e) => setAnimationSpeed(parseFloat(e.target.value))} className="flex-1 accent-primary h-1" />
-        <span className="text-[10px] text-muted-foreground">{animationSpeed.toFixed(1)}x</span>
+        <input type="range" min="0.5" max="2.5" step="0.1" value={animationSpeed} onChange={(e) => setAnimationSpeed(parseFloat(e.target.value))} className="flex-1 accent-primary h-1.5" />
+        <span className="text-xs text-muted-foreground font-mono">{animationSpeed.toFixed(1)}x</span>
       </div>
 
-      <div className="flex gap-1 flex-wrap">
-        <button onClick={() => setAnimationPlaying(true)} className={btn}>{lang === "he" ? "נגן" : "Play"}</button>
-        <button onClick={() => setAnimationPlaying(false)} className={btn}>{lang === "he" ? "השהה" : "Pause"}</button>
-        <button onClick={() => { setAnimationPlaying(false); setAnimationType("none"); }} className={btn}>{lang === "he" ? "אפס" : "Reset"}</button>
+      <div className="flex gap-2 flex-wrap">
+        <button onClick={() => setAnimationPlaying(true)} className={btn}>{lang === "he" ? "▶ נגן" : "▶ Play"}</button>
+        <button onClick={() => setAnimationPlaying(false)} className={btn}>{lang === "he" ? "⏸ השהה" : "⏸ Pause"}</button>
+        <button onClick={() => { setAnimationPlaying(false); setAnimationType("none"); }} className={btn}>{lang === "he" ? "⏹ אפס" : "⏹ Reset"}</button>
       </div>
 
       {/* Timeline */}
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex gap-2 flex-wrap">
         <button onClick={() => { setTimelineActive(true); setAnimationPlaying(true); }} className={btn}>{lang === "he" ? "התחל ציר זמן" : "Start Timeline"}</button>
-        <button onClick={() => { setTimelineActive(false); setAnimationPlaying(false); }} className={btn}>{lang === "he" ? "עצור ציר זמן" : "Stop Timeline"}</button>
+        <button onClick={() => { setTimelineActive(false); setAnimationPlaying(false); }} className={btn}>{lang === "he" ? "עצור" : "Stop"}</button>
       </div>
-      <div className={status}>{lang === "he" ? "ציר זמן:" : "Timeline:"} {timelineActive ? (lang === "he" ? "פעיל — אנימציה רצה" : "Active — Animation Running") : (lang === "he" ? "מוכן" : "Ready")}</div>
+      <div className={status}>{lang === "he" ? "ציר זמן:" : "Timeline:"} {timelineActive ? (lang === "he" ? "פעיל ▶" : "Active ▶") : (lang === "he" ? "מוכן" : "Ready")}</div>
 
       {/* System Demo */}
-      <div>
+      <div className="flex flex-col gap-1.5 border-t border-border pt-3">
         <span className={label}>{lang === "he" ? "הדמיית מערכת" : "System Simulation"}</span>
         <select value={systemDemo} onChange={(e) => setSystemDemo(e.target.value as SystemDemo)} className={select}>
           <option value="heart">{lang === "he" ? "פעולת הלב" : "Heart Action"}</option>
@@ -155,15 +150,15 @@ export default function ProToolsPanel() {
           <option value="head">{lang === "he" ? "הראש" : "Head"}</option>
         </select>
       </div>
-      <div className="flex gap-1">
-        <button onClick={handleStartSystemDemo} className={btn}>{lang === "he" ? "התחל הדמיה" : "Start"}</button>
-        <button onClick={handleStopSystemDemo} className={btn}>{lang === "he" ? "עצור הדמיה" : "Stop"}</button>
+      <div className="flex gap-2">
+        <button onClick={handleStartSystemDemo} className={btn}>{lang === "he" ? "▶ התחל" : "▶ Start"}</button>
+        <button onClick={handleStopSystemDemo} className={btn}>{lang === "he" ? "⏹ עצור" : "⏹ Stop"}</button>
       </div>
-      <div className={status}>{lang === "he" ? "הדמיה:" : "Simulation:"} {systemDemoActive ? `✅ ${systemDemo}` : (lang === "he" ? "מוכן" : "Ready")}</div>
+      <div className={status}>{lang === "he" ? "הדמיה:" : "Sim:"} {systemDemoActive ? `✅ ${systemDemo}` : (lang === "he" ? "מוכן" : "Ready")}</div>
 
       {/* Performance */}
-      <div>
-        <span className={label}>{lang === "he" ? "מצב ביצועים" : "Performance Mode"}</span>
+      <div className="flex flex-col gap-1.5 border-t border-border pt-3">
+        <span className={label}>{lang === "he" ? "מצב ביצועים" : "Performance"}</span>
         <select value={performanceMode} onChange={(e) => setPerformanceMode(e.target.value as PerformanceMode)} className={select}>
           <option value="balanced">{lang === "he" ? "מאוזן" : "Balanced"}</option>
           <option value="max">{lang === "he" ? "מהירות מקסימלית" : "Max Speed"}</option>
@@ -171,10 +166,9 @@ export default function ProToolsPanel() {
         </select>
       </div>
       <label className={toggle}>
-        <input type="checkbox" checked={adaptiveQuality} onChange={toggleAdaptiveQuality} className="accent-primary w-3 h-3" />
-        {lang === "he" ? "איכות דינמית בזמן תנועה" : "Adaptive Quality"}
+        <input type="checkbox" checked={adaptiveQuality} onChange={toggleAdaptiveQuality} className="accent-primary w-4 h-4" />
+        {lang === "he" ? "איכות דינמית" : "Adaptive Quality"}
       </label>
-      <div className={status}>{lang === "he" ? "ביצועים:" : "Performance:"} {performanceMode}</div>
     </div>
   );
 }

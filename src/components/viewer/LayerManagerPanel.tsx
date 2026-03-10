@@ -11,16 +11,13 @@ export default function LayerManagerPanel() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [layerMeta, setLayerMeta] = useState<Record<string, { name?: string; category?: string }>>({});
 
-  const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
-  const input = "w-full bg-secondary border border-border rounded-lg px-2.5 py-1.5 text-[11px] text-foreground focus:outline-none focus:ring-2 focus:ring-gold/40";
-  const label = "text-[10px] text-muted-foreground font-medium";
+  const btn = "px-3 py-2 text-xs bg-secondary border border-border rounded-lg hover:bg-accent transition-colors font-medium";
+  const input = "w-full bg-secondary border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40";
+  const label = "text-xs text-muted-foreground font-medium";
 
   const handleSaveMeta = () => {
     if (!selectedMesh) return;
-    setLayerMeta((prev) => ({
-      ...prev,
-      [selectedMesh]: { name: layerName || undefined, category: layerCategory || undefined },
-    }));
+    setLayerMeta((prev) => ({ ...prev, [selectedMesh]: { name: layerName || undefined, category: layerCategory || undefined } }));
   };
 
   const handleClearMeta = () => {
@@ -53,13 +50,14 @@ export default function LayerManagerPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Layer Editor */}
-      <div className="text-xs font-semibold">{lang === "he" ? "עורך שכבות" : "Layer Manager"}</div>
-      <div className="text-[10px] text-muted-foreground bg-secondary/50 rounded px-2 py-1">
+    <div className="flex flex-col gap-3.5">
+      {/* Selected layer status */}
+      <div className="text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
         {selectedMesh ? `${lang === "he" ? "נבחר" : "Selected"}: ${selectedMesh}` : (lang === "he" ? "בחר שכבה לעריכה" : "Select a layer to edit")}
       </div>
-      <div className="flex flex-col gap-1.5">
+
+      {/* Layer editor */}
+      <div className="flex flex-col gap-2">
         <span className={label}>{lang === "he" ? "שם שכבה" : "Layer Name"}</span>
         <input value={layerName} onChange={(e) => setLayerName(e.target.value)} placeholder={lang === "he" ? "שם חדש לשכבה" : "New layer name"} className={input} />
         <span className={label}>{lang === "he" ? "קטגוריה" : "Category"}</span>
@@ -67,23 +65,23 @@ export default function LayerManagerPanel() {
         <datalist id="layer-categories">
           {categories.map((c) => <option key={c} value={c} />)}
         </datalist>
-        <div className="flex gap-1">
-          <button onClick={handleSaveMeta} disabled={!selectedMesh} className={`${btn} ${!selectedMesh ? "opacity-50" : ""}`}>{lang === "he" ? "שמור שם/קטגוריה" : "Save"}</button>
+        <div className="flex gap-2">
+          <button onClick={handleSaveMeta} disabled={!selectedMesh} className={`${btn} ${!selectedMesh ? "opacity-50" : ""}`}>{lang === "he" ? "שמור" : "Save"}</button>
           <button onClick={handleClearMeta} disabled={!selectedMesh} className={`${btn} ${!selectedMesh ? "opacity-50" : ""}`}>{lang === "he" ? "נקה" : "Clear"}</button>
         </div>
       </div>
 
       {/* Category Manager */}
-      <div className="border-t border-border pt-3">
+      <div className="border-t border-border pt-3.5">
         <div className="text-xs font-semibold mb-2">{lang === "he" ? "מנהל קטגוריות" : "Category Manager"}</div>
         <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className={input}>
           <option value="">{lang === "he" ? "בחר קטגוריה" : "Select category"}</option>
           {categories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder={lang === "he" ? "שם קטגוריה חדשה" : "New category name"} className={`${input} mt-1.5`} />
-        <div className="flex gap-1 mt-1.5 flex-wrap">
+        <input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder={lang === "he" ? "שם קטגוריה חדשה" : "New category name"} className={`${input} mt-2`} />
+        <div className="flex gap-2 mt-2 flex-wrap">
           <button onClick={handleAddCategory} className={btn}>{lang === "he" ? "הוסף" : "Add"}</button>
-          <button onClick={handleRenameCategory} disabled={!selectedCategory} className={`${btn} ${!selectedCategory ? "opacity-50" : ""}`}>{lang === "he" ? "ערוך שם" : "Rename"}</button>
+          <button onClick={handleRenameCategory} disabled={!selectedCategory} className={`${btn} ${!selectedCategory ? "opacity-50" : ""}`}>{lang === "he" ? "ערוך" : "Rename"}</button>
           <button onClick={handleDeleteCategory} disabled={!selectedCategory} className={`${btn} ${!selectedCategory ? "opacity-50" : ""}`}>{lang === "he" ? "מחק" : "Delete"}</button>
         </div>
       </div>
