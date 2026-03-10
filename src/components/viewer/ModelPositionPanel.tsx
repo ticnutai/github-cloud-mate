@@ -1,7 +1,10 @@
+import { useEffect } from "react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { RotateCcw, Hand } from "lucide-react";
+
+const STORAGE_KEY = "open3d-model-position";
 
 const AXES = [
   { idx: 0, label: "X", color: "text-destructive" },
@@ -20,6 +23,24 @@ export default function ModelPositionPanel() {
   const dragMode = useViewerStore((s) => s.dragMode);
   const toggleDrag = useViewerStore((s) => s.toggleDragMode);
   const isRtl = lang === "he";
+
+  // Load saved position on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === 3) {
+          setPos(parsed as [number, number, number]);
+        }
+      }
+    } catch {}
+  }, [setPos]);
+
+  // Save position on change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
+  }, [pos]);
 
   const update = (idx: number, val: number) => {
     const next: [number, number, number] = [...pos];
