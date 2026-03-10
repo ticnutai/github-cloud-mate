@@ -1,24 +1,40 @@
+import { useEffect, useState } from "react";
 import { Check, FileText, Settings, FolderOpen } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import GitHubIcon from "./GitHubIcon";
 
 interface WorkspaceProps {
+  projectId: string;
   repoName: string;
   username: string;
   onDisconnect: () => void;
 }
 
-const PROJECT_FILES = [
-  { name: "composer.json", type: "file" },
-  { name: ".env.example", type: "file" },
-  { name: "routes/", type: "folder" },
-  { name: "app/", type: "folder" },
-  { name: "config/", type: "folder" },
-  { name: "database/", type: "folder" },
-  { name: "resources/", type: "folder" },
-  { name: "public/", type: "folder" },
-];
+interface ProjectFile {
+  id: string;
+  file_path: string;
+  file_type: string;
+  status: string;
+  size_bytes: number;
+}
 
-const Workspace = ({ repoName, username, onDisconnect }: WorkspaceProps) => {
+const Workspace = ({ projectId, repoName, username, onDisconnect }: WorkspaceProps) => {
+  const [files, setFiles] = useState<ProjectFile[]>([]);
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      const { data } = await supabase
+        .from("sync_files")
+        .select("id, file_path, file_type, status, size_bytes")
+        .eq("project_id", projectId)
+        .eq("status", "done")
+        .order("file_path");
+
+      if (data) setFiles(data);
+    };
+    fetchFiles();
+  }, [projectId]);
+
   return (
     <div className="flex flex-col min-h-screen px-4">
       <header className="flex items-center justify-between py-4 max-w-2xl mx-auto w-full border-b border-border">
@@ -50,22 +66,27 @@ const Workspace = ({ repoName, username, onDisconnect }: WorkspaceProps) => {
             <Check className="w-3.5 h-3.5" />
             <span>מסונכרן</span>
           </div>
-          <span className="text-xs text-muted-foreground">עודכן לאחרונה לפני 30 שניות</span>
+          <span className="text-xs text-muted-foreground">{files.length} קבצים סונכרנו</span>
         </div>
 
         <h2 className="text-sm font-semibold mb-3">קבצי הפרויקט</h2>
-        <div className="border border-border rounded-md divide-y divide-border">
-          {PROJECT_FILES.map((file) => (
+        <div className="border border-border rounded-md divide-y divide-border max-h-[400px] overflow-y-auto">
+          {files.map((file) => (
             <button
-              key={file.name}
+              key={file.id}
               className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-accent transition-colors text-right"
             >
-              {file.type === "folder" ? (
-                <FolderOpen className="w-4 h-4 text-muted-foreground" />
+              {file.file_type === "dir" ? (
+                <FolderOpen className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               ) : (
-                <FileText className="w-4 h-4 text-muted-foreground" />
+                <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               )}
-              <span className="text-sm font-mono">{file.name}</span>
+              <span className="text-sm font-mono truncate">{file.file_path}</span>
+              {file.size_bytes > 0 && (
+                <span className="text-xs text-muted-foreground mr-auto">
+                  {(file.size_bytes / 1024).toFixed(1)}KB
+                </span>
+              )}
             </button>
           ))}
         </div>
