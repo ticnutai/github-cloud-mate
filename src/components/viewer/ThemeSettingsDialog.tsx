@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useViewerStore } from "@/lib/viewerStore";
 
 interface ThemeSettingsDialogProps {
@@ -7,75 +7,38 @@ interface ThemeSettingsDialogProps {
 
 interface ThemeColors {
   background: string;
-  backgroundSecondary: string;
-  foreground: string;
   card: string;
+  foreground: string;
   primary: string;
+  gold: string;
   border: string;
   accent: string;
-  muted: string;
 }
 
-const THEMES: { key: string; label: string; labelHe: string; colors: ThemeColors }[] = [
+const THEMES: { key: string; labelHe: string; label: string; colors: ThemeColors }[] = [
   {
-    key: "ocean-pro",
-    label: "Ocean Pro",
-    labelHe: "אוקיינוס מקצועי",
-    colors: {
-      background: "#111827",
-      backgroundSecondary: "#101820",
-      foreground: "#c9d1d9",
-      card: "#1a2332",
-      primary: "#3b82f6",
-      border: "#2a3441",
-      accent: "#2d3a4a",
-      muted: "#2a3441",
-    },
+    key: "white-gold",
+    labelHe: "לבן-זהב (ברירת מחדל)",
+    label: "White Gold (Default)",
+    colors: { background: "#f8f6f1", card: "#ffffff", foreground: "#1a2e52", primary: "#1a2e52", gold: "#c89520", border: "#c9a84c", accent: "#f0ead6" },
   },
   {
-    key: "light-gold",
-    label: "Light Gold Navy",
-    labelHe: "זהב-כחול בהיר",
-    colors: {
-      background: "#0a1628",
-      backgroundSecondary: "#0d1e36",
-      foreground: "#e0d8c8",
-      card: "#0f1f33",
-      primary: "#d4af37",
-      border: "#1e3050",
-      accent: "#1a2d4a",
-      muted: "#1e3050",
-    },
+    key: "navy-gold",
+    labelHe: "כחול נייבי-זהב",
+    label: "Navy Gold",
+    colors: { background: "#0f1a2e", card: "#162240", foreground: "#e8e0d0", primary: "#c89520", gold: "#c89520", border: "#2a3d60", accent: "#1c2d4e" },
   },
   {
-    key: "graphite-dark",
-    label: "Graphite Dark",
-    labelHe: "גרפיט כהה",
-    colors: {
-      background: "#1a1a1a",
-      backgroundSecondary: "#222222",
-      foreground: "#b0b0b0",
-      card: "#242424",
-      primary: "#6b7280",
-      border: "#333333",
-      accent: "#2e2e2e",
-      muted: "#333333",
-    },
+    key: "cream-classic",
+    labelHe: "קרם קלאסי",
+    label: "Cream Classic",
+    colors: { background: "#faf8f3", card: "#ffffff", foreground: "#2c1810", primary: "#8b4513", gold: "#b8860b", border: "#d4c4a0", accent: "#f5eed6" },
   },
   {
-    key: "mint-clinic",
-    label: "Mint Clinic",
-    labelHe: "מנטה קליני",
-    colors: {
-      background: "#0d1f1a",
-      backgroundSecondary: "#102820",
-      foreground: "#c8e0d8",
-      card: "#132a22",
-      primary: "#34d399",
-      border: "#1e3d30",
-      accent: "#1a3528",
-      muted: "#1e3d30",
-    },
+    key: "slate-modern",
+    labelHe: "מודרני אפור",
+    label: "Slate Modern",
+    colors: { background: "#f1f5f9", card: "#ffffff", foreground: "#0f172a", primary: "#334155", gold: "#a3873c", border: "#cbd5e1", accent: "#e2e8f0" },
   },
 ];
 
@@ -107,31 +70,30 @@ function applyTheme(colors: ThemeColors) {
   root.style.setProperty("--popover", hexToHsl(colors.card));
   root.style.setProperty("--popover-foreground", hexToHsl(colors.foreground));
   root.style.setProperty("--primary", hexToHsl(colors.primary));
-  root.style.setProperty("--secondary", hexToHsl(colors.backgroundSecondary));
+  root.style.setProperty("--secondary", hexToHsl(colors.accent));
   root.style.setProperty("--secondary-foreground", hexToHsl(colors.foreground));
-  root.style.setProperty("--muted", hexToHsl(colors.muted));
+  root.style.setProperty("--muted", hexToHsl(colors.accent));
+  root.style.setProperty("--muted-foreground", hexToHsl(colors.foreground + "88").replace("88", ""));
   root.style.setProperty("--accent", hexToHsl(colors.accent));
   root.style.setProperty("--accent-foreground", hexToHsl(colors.foreground));
   root.style.setProperty("--border", hexToHsl(colors.border));
   root.style.setProperty("--input", hexToHsl(colors.border));
-  root.style.setProperty("--ring", hexToHsl(colors.primary));
-  root.style.setProperty("--sidebar-background", hexToHsl(colors.background));
+  root.style.setProperty("--ring", hexToHsl(colors.gold));
+  root.style.setProperty("--gold", hexToHsl(colors.gold));
+  root.style.setProperty("--sidebar-background", hexToHsl(colors.card));
   root.style.setProperty("--sidebar-foreground", hexToHsl(colors.foreground));
   root.style.setProperty("--sidebar-primary", hexToHsl(colors.primary));
   root.style.setProperty("--sidebar-accent", hexToHsl(colors.accent));
   root.style.setProperty("--sidebar-border", hexToHsl(colors.border));
-  root.style.setProperty("--sidebar-ring", hexToHsl(colors.primary));
+  root.style.setProperty("--sidebar-ring", hexToHsl(colors.gold));
 }
-
-const DEFAULT_THEME = THEMES[0];
 
 export default function ThemeSettingsDialog({ onClose }: ThemeSettingsDialogProps) {
   const lang = useViewerStore((s) => s.lang);
-  const [activeTheme, setActiveTheme] = useState("ocean-pro");
-  const [bgMode, setBgMode] = useState("solid");
-  const [bgAngle, setBgAngle] = useState(135);
+  const [activeTheme, setActiveTheme] = useState("white-gold");
+  const isRtl = lang === "he";
 
-  const activeColors = THEMES.find((t) => t.key === activeTheme)?.colors || DEFAULT_THEME.colors;
+  const activeColors = THEMES.find((t) => t.key === activeTheme)?.colors || THEMES[0].colors;
 
   const handleSelectTheme = useCallback((key: string) => {
     setActiveTheme(key);
@@ -140,69 +102,57 @@ export default function ThemeSettingsDialog({ onClose }: ThemeSettingsDialogProp
   }, []);
 
   const handleReset = useCallback(() => {
-    handleSelectTheme("ocean-pro");
+    handleSelectTheme("white-gold");
   }, [handleSelectTheme]);
 
-  const btn = "px-3 py-1.5 text-[11px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="bg-card border border-border rounded-lg p-5 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl"
-        dir={lang === "he" ? "rtl" : "ltr"}
+        className="bg-card border-2 rounded-xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto gold-glow"
+        style={{ borderColor: 'hsl(43 74% 49%)' }}
+        dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-semibold mb-3">
-          {lang === "he" ? "הגדרות תצוגה וערכות נושא" : "Display & Theme Settings"}
+        <h3 className="text-base font-bold mb-4 text-foreground flex items-center gap-2">
+          <span className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground text-[10px] font-bold">🎨</span>
+          </span>
+          {isRtl ? "ערכות נושא" : "Theme Settings"}
         </h3>
 
         {/* Theme presets */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-2.5 mb-5">
           {THEMES.map((theme) => (
             <button
               key={theme.key}
               onClick={() => handleSelectTheme(theme.key)}
-              className={`px-3 py-2 text-[11px] rounded border transition-colors ${
+              className={`px-3 py-3 text-[11px] font-medium rounded-lg border-2 transition-all duration-200 ${
                 activeTheme === theme.key
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary border-border hover:bg-accent"
+                  ? "border-gold bg-gold/10 text-foreground shadow-md"
+                  : "border-border bg-secondary hover:bg-accent hover:border-gold/40"
               }`}
             >
-              {lang === "he" ? theme.labelHe : theme.label}
+              {isRtl ? theme.labelHe : theme.label}
             </button>
           ))}
         </div>
 
         {/* Preview strip */}
-        <div className="mb-4 rounded border border-border overflow-hidden h-12 flex">
-          <div className="flex-1" style={{ background: activeColors.background }} />
-          <div className="flex-1" style={{ background: activeColors.card }} />
-          <div className="flex-1" style={{ background: activeColors.primary }} />
-          <div className="flex-1" style={{ background: activeColors.accent }} />
-          <div className="flex-1" style={{ background: activeColors.border }} />
-        </div>
-
-        {/* BG mode */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[10px] text-muted-foreground">{lang === "he" ? "סוג רקע" : "BG Mode"}</span>
-          <select value={bgMode} onChange={(e) => setBgMode(e.target.value)} className="bg-secondary border border-border rounded px-2 py-1 text-[10px] text-foreground">
-            <option value="solid">{lang === "he" ? "אחיד" : "Solid"}</option>
-            <option value="linear">{lang === "he" ? "ליניארי" : "Linear"}</option>
-            <option value="radial">{lang === "he" ? "רדיאלי" : "Radial"}</option>
-          </select>
-          {bgMode !== "solid" && (
-            <>
-              <span className="text-[10px] text-muted-foreground">{lang === "he" ? "זווית" : "Angle"}</span>
-              <input type="number" min="0" max="360" value={bgAngle} onChange={(e) => setBgAngle(parseInt(e.target.value))} className="w-14 bg-secondary border border-border rounded px-1.5 py-1 text-[10px] font-mono text-foreground" />
-            </>
-          )}
+        <div className="mb-5 rounded-lg border-2 border-border overflow-hidden h-10 flex shadow-inner">
+          <div className="flex-1 transition-colors duration-300" style={{ background: activeColors.background }} />
+          <div className="flex-1 transition-colors duration-300" style={{ background: activeColors.card }} />
+          <div className="flex-1 transition-colors duration-300" style={{ background: activeColors.primary }} />
+          <div className="flex-1 transition-colors duration-300" style={{ background: activeColors.gold }} />
+          <div className="flex-1 transition-colors duration-300" style={{ background: activeColors.border }} />
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={handleReset} className={btn}>{lang === "he" ? "איפוס צבעים" : "Reset Colors"}</button>
-          <button onClick={onClose} className={`${btn} bg-primary text-primary-foreground hover:bg-primary/90`}>
-            {lang === "he" ? "סגור" : "Close"}
+        <div className="flex gap-2">
+          <button onClick={handleReset} className="flex-1 px-3 py-2 text-[11px] font-medium bg-secondary border border-border rounded-lg hover:bg-accent transition-colors">
+            {isRtl ? "איפוס" : "Reset"}
+          </button>
+          <button onClick={onClose} className="flex-1 px-3 py-2 text-[11px] font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
+            {isRtl ? "סגור" : "Close"}
           </button>
         </div>
       </div>

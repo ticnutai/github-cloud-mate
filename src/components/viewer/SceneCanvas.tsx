@@ -262,7 +262,7 @@ export default function SceneCanvas({ model }: SceneCanvasProps) {
   const disableOrbit = animationType === "presentation" && useViewerStore.getState().animationPlaying;
 
   return (
-    <div className="w-full h-full bg-black/90 rounded-lg overflow-hidden">
+    <div className="w-full h-full bg-gradient-to-br from-slate-50 via-white to-amber-50/30 overflow-hidden">
       <Canvas
         key={key}
         camera={{ position: [2, 1.5, 3], fov: 50 }}
