@@ -532,12 +532,17 @@ function AutoFit() {
     const center = box.getCenter(new THREE.Vector3());
     const maxDim = Math.max(size.x, size.y, size.z);
     const fov = (camera as THREE.PerspectiveCamera).fov * (Math.PI / 180);
-    const distance = maxDim / (2 * Math.tan(fov / 2)) * 1.5;
-    camera.position.set(center.x + distance * 0.5, center.y + distance * 0.3, center.z + distance);
+    const distance = maxDim / (2 * Math.tan(fov / 2)) * 2.2;
+    camera.position.set(center.x + distance * 0.4, center.y + distance * 0.15, center.z + distance * 0.8);
     camera.lookAt(center);
     (camera as THREE.PerspectiveCamera).near = distance / 100;
     (camera as THREE.PerspectiveCamera).far = distance * 100;
     camera.updateProjectionMatrix();
+    // Update orbit target to model center
+    if (orbitControlsRef) {
+      orbitControlsRef.target.copy(center);
+      orbitControlsRef.update();
+    }
   }, [camera, scene]);
   return null;
 }
