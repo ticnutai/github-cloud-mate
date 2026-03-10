@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope } from "lucide-react";
+import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
@@ -12,9 +12,13 @@ import AnalysisPanel from "@/components/viewer/AnalysisPanel";
 import StudyModePanel from "@/components/viewer/StudyModePanel";
 import AdvancedToolsPanel from "@/components/viewer/AdvancedToolsPanel";
 import XYZPanel from "@/components/viewer/XYZPanel";
+import LayerManagerPanel from "@/components/viewer/LayerManagerPanel";
+import DirectLibraryPanel from "@/components/viewer/DirectLibraryPanel";
+import CompareModelsPanel from "@/components/viewer/CompareModelsPanel";
 import PartDetailsDialog from "@/components/viewer/PartDetailsDialog";
 import ModelComposerDialog from "@/components/viewer/ModelComposerDialog";
 import ThemeSettingsDialog from "@/components/viewer/ThemeSettingsDialog";
+import AnimationsGalleryDialog from "@/components/viewer/AnimationsGalleryDialog";
 
 function Section({ title, icon, defaultOpen = false, children }: { title: string; icon?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
