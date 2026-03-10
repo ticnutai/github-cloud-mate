@@ -88,6 +88,7 @@ function Model({ model }: ModelProps) {
         ref={groupRef}
         object={scene}
         onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
       />
