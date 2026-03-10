@@ -224,8 +224,12 @@ export default function ViewerPage() {
                   className="flex-1 bg-secondary border border-border rounded-lg px-2.5 py-2 text-xs text-foreground font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 transition-shadow"
                   dir="rtl"
                 >
-                  {MODELS.map((m) => (
-                    <option key={m.key} value={m.key}>{isRtl ? m.labels.he : m.labels.en}</option>
+                  {(Object.keys(MODEL_CATEGORIES) as ModelCategory[]).map((cat) => (
+                    <optgroup key={cat} label={isRtl ? MODEL_CATEGORIES[cat].he : MODEL_CATEGORIES[cat].en}>
+                      {MODELS.filter((m) => m.category === cat).map((m) => (
+                        <option key={m.key} value={m.key}>{isRtl ? m.labels.he : m.labels.en}</option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
                 <button onClick={() => setComposerOpen(true)} className="p-2 bg-secondary border border-border rounded-lg hover:bg-accent hover:border-primary/40 transition-all shrink-0" title={isRtl ? "קומפוזר" : "Composer"}>
