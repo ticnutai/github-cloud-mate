@@ -216,6 +216,80 @@ function AnimationController() {
   return null;
 }
 
+function DragController() {
+  const { camera, gl, raycaster } = useThree();
+  const dragMode = useViewerStore((s) => s.dragMode);
+  const isDragging = useRef(false);
+  const prevPoint = useRef<THREE.Vector3 | null>(null);
+  const plane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
+
+  useEffect(() => {
+    if (!dragMode) return;
+    const canvas = gl.domElement;
+
+    const getWorldPoint = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouse = new THREE.Vector2(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1
+      );
+      raycaster.setFromCamera(mouse, camera);
+      const pt = new THREE.Vector3();
+      raycaster.ray.intersectPlane(plane.current, pt);
+      return pt;
+    };
+
+    const onDown = (e: PointerEvent) => {
+      isDragging.current = true;
+      // Update plane to face camera but keep Y=0 intersection
+      const camDir = camera.getWorldDirection(new THREE.Vector3());
+      // Use a horizontal plane at the model's current Y position
+      const pos = useViewerStore.getState().modelPosition;
+      plane.current.set(new THREE.Vector3(0, 1, 0), -pos[1]);
+      prevPoint.current = getWorldPoint(e);
+      canvas.style.cursor = "grabbing";
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (!isDragging.current || !prevPoint.current) return;
+      const curr = getWorldPoint(e);
+      if (!curr) return;
+      const delta = curr.sub(prevPoint.current);
+      const pos = useViewerStore.getState().modelPosition;
+      const next: [number, number, number] = [
+        Math.round((pos[0] + delta.x) * 100) / 100,
+        pos[1],
+        Math.round((pos[2] + delta.z) * 100) / 100,
+      ];
+      useViewerStore.getState().setModelPosition(next);
+      prevPoint.current = curr.add(delta); // update doesn't work well, recalc
+      prevPoint.current = getWorldPoint(e);
+    };
+
+    const onUp = () => {
+      isDragging.current = false;
+      prevPoint.current = null;
+      canvas.style.cursor = "grab";
+    };
+
+    canvas.style.cursor = "grab";
+    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointerleave", onUp);
+
+    return () => {
+      canvas.style.cursor = "";
+      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointerleave", onUp);
+    };
+  }, [dragMode, camera, gl, raycaster]);
+
+  return null;
+}
+
 function AutoFit() {
   const { camera, scene } = useThree();
   useEffect(() => {
