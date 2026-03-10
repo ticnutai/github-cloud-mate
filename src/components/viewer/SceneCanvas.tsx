@@ -67,6 +67,14 @@ function Model({ model }: ModelProps) {
     if (e.object?.name) setSelectedMesh(e.object.name);
   }, [setSelectedMesh]);
 
+  const handleDoubleClick = useCallback((e: any) => {
+    e.stopPropagation();
+    if (e.object?.name) {
+      setSelectedMesh(e.object.name);
+      useViewerStore.getState().setPartDetailsOpen(true);
+    }
+  }, [setSelectedMesh]);
+
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation();
     if (e.object?.name) setHoveredMesh(e.object.name);
