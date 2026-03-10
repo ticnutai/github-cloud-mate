@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useViewerStore } from "@/lib/viewerStore";
 import * as THREE from "three";
+
+const XYZ_SLOTS_KEY = "open3d-xyz-slots";
 
 export default function XYZPanel() {
   const lang = useViewerStore((s) => s.lang);
@@ -16,6 +18,9 @@ export default function XYZPanel() {
   const toggleXyzLock = useViewerStore((s) => s.toggleXyzLock);
   const selectedMesh = useViewerStore((s) => s.selectedMesh);
   const meshes = useViewerStore((s) => s.meshes);
+  const setSelectedMesh = useViewerStore((s) => s.setSelectedMesh);
+  const gridVisible = useViewerStore((s) => s.gridVisible);
+  const toggleGrid = useViewerStore((s) => s.toggleGrid);
 
   const [gridMode, setGridMode] = useState("all");
   const [gridStyle, setGridStyle] = useState("classic");
@@ -27,6 +32,10 @@ export default function XYZPanel() {
   const [slot, setSlot] = useState("1");
   const [axisLock, setAxisLock] = useState({ x: false, y: false, z: false });
 
+  // Undo/Redo stacks (local)
+  const undoStack = useRef<{ name: string; pos: [number,number,number]; rot: [number,number,number]; scale: number }[]>([]);
+  const redoStack = useRef<{ name: string; pos: [number,number,number]; rot: [number,number,number]; scale: number }[]>([]);
+
   const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
   const dirBtn = "px-2.5 py-1.5 text-[10px] font-mono bg-secondary border border-border rounded hover:bg-primary hover:text-primary-foreground transition-colors";
   const toggle = "flex items-center gap-2 cursor-pointer text-[10px]";
@@ -37,28 +46,78 @@ export default function XYZPanel() {
 
   const getMesh = () => selectedMesh ? meshes.find((m) => m.name === selectedMesh) : null;
 
+  const saveUndoState = () => {
+    const mesh = getMesh();
+    if (!mesh) return;
+    const obj = mesh.object;
+    undoStack.current.push({
+      name: mesh.name,
+      pos: [obj.position.x, obj.position.y, obj.position.z],
+      rot: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
+      scale: obj.scale.x,
+    });
+    redoStack.current = [];
+  };
+
   const moveMesh = (axis: "x" | "y" | "z", dir: number) => {
     const mesh = getMesh();
     if (!mesh || xyz.lockedParts.has(selectedMesh!) || axisLock[axis]) return;
-    const step = xyz.moveStep * dir;
-    mesh.object.position[axis] += step;
+    saveUndoState();
+    mesh.object.position[axis] += xyz.moveStep * dir;
   };
 
   const rotateMesh = (axis: "x" | "y" | "z", dir: number) => {
     const mesh = getMesh();
     if (!mesh || xyz.lockedParts.has(selectedMesh!)) return;
+    saveUndoState();
     mesh.object.rotation[axis] += THREE.MathUtils.degToRad(xyz.rotateStep * dir);
   };
 
   const scaleMesh = (dir: number) => {
     const mesh = getMesh();
     if (!mesh || xyz.lockedParts.has(selectedMesh!)) return;
+    saveUndoState();
     mesh.object.scale.multiplyScalar(1 + xyz.scaleStep * dir);
+  };
+
+  const handleUndo = () => {
+    if (undoStack.current.length === 0) return;
+    const state = undoStack.current.pop()!;
+    const mesh = meshes.find(m => m.name === state.name);
+    if (!mesh) return;
+    const obj = mesh.object;
+    redoStack.current.push({
+      name: state.name,
+      pos: [obj.position.x, obj.position.y, obj.position.z],
+      rot: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
+      scale: obj.scale.x,
+    });
+    obj.position.set(...state.pos);
+    obj.rotation.set(...state.rot);
+    obj.scale.setScalar(state.scale);
+  };
+
+  const handleRedo = () => {
+    if (redoStack.current.length === 0) return;
+    const state = redoStack.current.pop()!;
+    const mesh = meshes.find(m => m.name === state.name);
+    if (!mesh) return;
+    const obj = mesh.object;
+    undoStack.current.push({
+      name: state.name,
+      pos: [obj.position.x, obj.position.y, obj.position.z],
+      rot: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
+      scale: obj.scale.x,
+    });
+    obj.position.set(...state.pos);
+    obj.rotation.set(...state.rot);
+    obj.scale.setScalar(state.scale);
   };
 
   const applyNumericXYZ = () => {
     const mesh = getMesh();
     if (!mesh) return;
+    saveUndoState();
     if (posX) mesh.object.position.x = parseFloat(posX);
     if (posY) mesh.object.position.y = parseFloat(posY);
     if (posZ) mesh.object.position.z = parseFloat(posZ);
@@ -70,6 +129,120 @@ export default function XYZPanel() {
     setPosX(mesh.object.position.x.toFixed(4));
     setPosY(mesh.object.position.y.toFixed(4));
     setPosZ(mesh.object.position.z.toFixed(4));
+  };
+
+  const handleResetMesh = () => {
+    const mesh = getMesh();
+    if (!mesh) return;
+    saveUndoState();
+    mesh.object.position.set(0, 0, 0);
+    mesh.object.rotation.set(0, 0, 0);
+    mesh.object.scale.set(1, 1, 1);
+  };
+
+  const handleAlignX = () => {
+    const mesh = getMesh();
+    if (!mesh) return;
+    saveUndoState();
+    mesh.object.position.x = 0;
+    mesh.object.rotation.y = 0;
+    mesh.object.rotation.z = 0;
+  };
+
+  // Navigate prev/next mesh
+  const handlePrev = () => {
+    if (!selectedMesh) return;
+    const idx = meshes.findIndex(m => m.name === selectedMesh);
+    if (idx > 0) setSelectedMesh(meshes[idx - 1].name);
+  };
+  const handleNext = () => {
+    if (!selectedMesh) return;
+    const idx = meshes.findIndex(m => m.name === selectedMesh);
+    if (idx < meshes.length - 1) setSelectedMesh(meshes[idx + 1].name);
+  };
+
+  // Slots (localStorage)
+  const handleSaveSlot = () => {
+    const mesh = getMesh();
+    if (!mesh) return;
+    const obj = mesh.object;
+    try {
+      const slots = JSON.parse(localStorage.getItem(XYZ_SLOTS_KEY) || "{}");
+      slots[slot] = {
+        name: mesh.name,
+        pos: [obj.position.x, obj.position.y, obj.position.z],
+        rot: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
+        scale: obj.scale.x,
+      };
+      localStorage.setItem(XYZ_SLOTS_KEY, JSON.stringify(slots));
+    } catch {}
+  };
+
+  const handleLoadSlot = () => {
+    try {
+      const slots = JSON.parse(localStorage.getItem(XYZ_SLOTS_KEY) || "{}");
+      const data = slots[slot];
+      if (!data) return;
+      const mesh = meshes.find(m => m.name === data.name);
+      if (!mesh) return;
+      saveUndoState();
+      mesh.object.position.set(...(data.pos as [number,number,number]));
+      mesh.object.rotation.set(...(data.rot as [number,number,number]));
+      mesh.object.scale.setScalar(data.scale);
+      setSelectedMesh(data.name);
+    } catch {}
+  };
+
+  const handleClearSlot = () => {
+    try {
+      const slots = JSON.parse(localStorage.getItem(XYZ_SLOTS_KEY) || "{}");
+      delete slots[slot];
+      localStorage.setItem(XYZ_SLOTS_KEY, JSON.stringify(slots));
+    } catch {}
+  };
+
+  const handleExportCalibrations = () => {
+    const data: Record<string, any> = {};
+    meshes.forEach(m => {
+      const obj = m.object;
+      data[m.name] = {
+        pos: [obj.position.x, obj.position.y, obj.position.z],
+        rot: [obj.rotation.x, obj.rotation.y, obj.rotation.z],
+        scale: obj.scale.x,
+      };
+    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.download = "xyz-calibrations.json";
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const handleImportCalibrations = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result as string);
+          Object.entries(data).forEach(([name, val]: [string, any]) => {
+            const mesh = meshes.find(m => m.name === name);
+            if (mesh) {
+              mesh.object.position.set(...(val.pos as [number,number,number]));
+              mesh.object.rotation.set(...(val.rot as [number,number,number]));
+              mesh.object.scale.setScalar(val.scale);
+            }
+          });
+        } catch {}
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   };
 
   if (!xyzEnabled) {
@@ -132,6 +305,7 @@ export default function XYZPanel() {
         <label className={toggle}><input type="checkbox" checked={xyz.snap} onChange={toggleXyzSnap} className="accent-primary w-3 h-3" />Snap</label>
         <label className={toggle}><input type="checkbox" checked={xyz.autoSave} onChange={toggleXyzAutoSave} className="accent-primary w-3 h-3" />Auto</label>
         <label className={toggle}><input type="checkbox" checked={xyz.symmetry} onChange={toggleXyzSymmetry} className="accent-primary w-3 h-3" />Sym</label>
+        <label className={toggle}><input type="checkbox" checked={gridVisible} onChange={toggleGrid} className="accent-primary w-3 h-3" />Grid</label>
       </div>
 
       {/* Axis locks */}
@@ -144,45 +318,16 @@ export default function XYZPanel() {
         ))}
       </div>
 
-      {/* Lock part */}
+      {/* Lock part + navigate */}
       {selectedMesh && (
         <div className="flex gap-1">
           <button onClick={() => toggleXyzLock(selectedMesh)} className={btn}>
             {xyz.lockedParts.has(selectedMesh) ? "🔒 " : "🔓 "}{lang === "he" ? (xyz.lockedParts.has(selectedMesh) ? "נעול" : "נעל איבר") : "Lock"}
           </button>
-          <button className={btn}>{lang === "he" ? "איבר קודם" : "Prev"}</button>
-          <button className={btn}>{lang === "he" ? "איבר הבא" : "Next"}</button>
+          <button onClick={handlePrev} className={btn}>{lang === "he" ? "איבר קודם" : "Prev"}</button>
+          <button onClick={handleNext} className={btn}>{lang === "he" ? "איבר הבא" : "Next"}</button>
         </div>
       )}
-
-      {/* Grid controls */}
-      <div className="border-t border-border pt-2">
-        <span className={`${label} font-semibold`}>▦ Grid</span>
-        <div className="grid grid-cols-2 gap-1.5 mt-1">
-          <select value={gridMode} onChange={(e) => setGridMode(e.target.value)} className={select}>
-            <option value="all">All Planes</option>
-            <option value="xy">XY Only</option>
-            <option value="xz">XZ Only</option>
-            <option value="yz">YZ Only</option>
-            <option value="z-only">Z Axis Only</option>
-          </select>
-          <select value={gridStyle} onChange={(e) => setGridStyle(e.target.value)} className={select}>
-            <option value="classic">Classic</option>
-            <option value="surgical">Surgical</option>
-            <option value="neon">Neon</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-2 mt-1.5">
-          <span className={label}>Size</span>
-          <input type="range" min="1.2" max="6" step="0.1" value={gridSize} onChange={(e) => setGridSize(parseFloat(e.target.value))} className="flex-1 accent-gold h-1" />
-          <span className="text-[9px] text-muted-foreground w-6">{gridSize}</span>
-        </div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className={label}>Div</span>
-          <input type="range" min="8" max="80" step="2" value={gridDivisions} onChange={(e) => setGridDivisions(parseInt(e.target.value))} className="flex-1 accent-gold h-1" />
-          <span className="text-[9px] text-muted-foreground w-6">{gridDivisions}</span>
-        </div>
-      </div>
 
       {/* Numeric XYZ */}
       <div className="border-t border-border pt-2">
@@ -205,24 +350,22 @@ export default function XYZPanel() {
           <select value={slot} onChange={(e) => setSlot(e.target.value)} className="w-12 bg-secondary border border-border rounded px-1 py-1 text-[10px]">
             <option value="1">1</option><option value="2">2</option><option value="3">3</option>
           </select>
-          <button className={btn}>{lang === "he" ? "שמור" : "Save"}</button>
-          <button className={btn}>{lang === "he" ? "טען" : "Load"}</button>
-          <button className={btn}>{lang === "he" ? "נקה" : "Clear"}</button>
+          <button onClick={handleSaveSlot} className={btn}>{lang === "he" ? "שמור" : "Save"}</button>
+          <button onClick={handleLoadSlot} className={btn}>{lang === "he" ? "טען" : "Load"}</button>
+          <button onClick={handleClearSlot} className={btn}>{lang === "he" ? "נקה" : "Clear"}</button>
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex gap-1 flex-wrap">
-        <button className={btn}>{lang === "he" ? "אפס מיקום" : "Reset"}</button>
-        <button className={btn}>{lang === "he" ? "שחזור שמור" : "Restore"}</button>
-        <button className={btn}>{lang === "he" ? "שמור כיול" : "Save Cal"}</button>
-        <button className={btn}>{lang === "he" ? "יישור X" : "Align X"}</button>
+        <button onClick={handleResetMesh} className={btn}>{lang === "he" ? "אפס מיקום" : "Reset"}</button>
+        <button onClick={handleAlignX} className={btn}>{lang === "he" ? "יישור X" : "Align X"}</button>
       </div>
       <div className="flex gap-1 flex-wrap">
-        <button className={btn}>Undo</button>
-        <button className={btn}>Redo</button>
-        <button className={btn}>{lang === "he" ? "ייצוא כיולים" : "Export"}</button>
-        <button className={btn}>{lang === "he" ? "ייבוא כיולים" : "Import"}</button>
+        <button onClick={handleUndo} disabled={undoStack.current.length === 0} className={`${btn} ${undoStack.current.length === 0 ? "opacity-50" : ""}`}>Undo</button>
+        <button onClick={handleRedo} disabled={redoStack.current.length === 0} className={`${btn} ${redoStack.current.length === 0 ? "opacity-50" : ""}`}>Redo</button>
+        <button onClick={handleExportCalibrations} className={btn}>{lang === "he" ? "ייצוא כיולים" : "Export"}</button>
+        <button onClick={handleImportCalibrations} className={btn}>{lang === "he" ? "ייבוא כיולים" : "Import"}</button>
       </div>
 
       <div className="text-[9px] text-muted-foreground bg-secondary/30 rounded px-2 py-1 font-mono">

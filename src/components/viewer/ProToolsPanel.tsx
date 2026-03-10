@@ -1,6 +1,15 @@
 import { useViewerStore } from "@/lib/viewerStore";
 import type { ProPreset, AnimationType, SystemDemo, PerformanceMode } from "@/lib/viewerStore";
 
+const systemDemoKeywords: Record<string, string[]> = {
+  heart: ["heart", "cardiac", "coronary", "ventricle", "atrium", "aorta", "valve"],
+  respiratory: ["lung", "bronch", "trachea", "diaphragm", "respiratory", "alveol"],
+  circulatory: ["artery", "vein", "vessel", "blood", "aorta", "carotid", "jugular", "capillary"],
+  lymphatic: ["lymph", "spleen", "thymus", "tonsil", "node"],
+  urinary: ["kidney", "ureter", "bladder", "urethra", "renal", "adrenal"],
+  head: ["skull", "cranium", "mandible", "maxilla", "orbit", "nasal", "temporal", "frontal", "brain", "cerebr"],
+};
+
 export default function ProToolsPanel() {
   const lang = useViewerStore((s) => s.lang);
   const proPreset = useViewerStore((s) => s.proPreset);
@@ -25,12 +34,56 @@ export default function ProToolsPanel() {
   const toggleAdaptiveQuality = useViewerStore((s) => s.toggleAdaptiveQuality);
   const timelineActive = useViewerStore((s) => s.timelineActive);
   const setTimelineActive = useViewerStore((s) => s.setTimelineActive);
+  const meshes = useViewerStore((s) => s.meshes);
+  const showAll = useViewerStore((s) => s.showAll);
 
   const label = "text-[10px] text-muted-foreground";
   const select = "w-full bg-secondary border border-border rounded px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring";
   const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
   const toggle = "flex items-center gap-2 cursor-pointer text-[11px]";
   const status = "text-[10px] text-muted-foreground bg-secondary/50 rounded px-2 py-1";
+
+  const handleStartSystemDemo = () => {
+    setSystemDemoActive(true);
+    // Isolate relevant parts
+    const keywords = systemDemoKeywords[systemDemo] || [];
+    meshes.forEach((m) => {
+      const match = keywords.some((kw) => m.name.toLowerCase().includes(kw));
+      m.object.visible = match;
+    });
+    useViewerStore.setState({
+      meshes: meshes.map((m) => ({
+        ...m,
+        visible: keywords.some((kw) => m.name.toLowerCase().includes(kw)),
+      })),
+    });
+    // Start breathing animation on the isolated system
+    setAnimationType("breathing");
+    setAnimationPlaying(true);
+  };
+
+  const handleStopSystemDemo = () => {
+    setSystemDemoActive(false);
+    showAll();
+    setAnimationType("none");
+    setAnimationPlaying(false);
+  };
+
+  // Pro presets apply a combination of settings
+  const applyPreset = (preset: ProPreset) => {
+    setProPreset(preset);
+    if (preset === "clinical") {
+      if (!realisticMode) toggleRealisticMode();
+      setAnimationType("none");
+      setAnimationPlaying(false);
+    } else if (preset === "teaching") {
+      if (realisticMode) toggleRealisticMode();
+      setAnimationType("none");
+    } else if (preset === "presentation") {
+      setAnimationType("presentation");
+      setAnimationPlaying(true);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -39,7 +92,7 @@ export default function ProToolsPanel() {
       {/* Pro Preset */}
       <div className="flex items-center gap-2">
         <span className={label}>{lang === "he" ? "פריסט" : "Preset"}</span>
-        <select value={proPreset} onChange={(e) => setProPreset(e.target.value as ProPreset)} className={select}>
+        <select value={proPreset} onChange={(e) => applyPreset(e.target.value as ProPreset)} className={select}>
           <option value="custom">{lang === "he" ? "מותאם אישית" : "Custom"}</option>
           <option value="clinical">{lang === "he" ? "קליני" : "Clinical"}</option>
           <option value="teaching">{lang === "he" ? "לימודי" : "Teaching"}</option>
@@ -63,6 +116,8 @@ export default function ProToolsPanel() {
         <select value={animationType} onChange={(e) => setAnimationType(e.target.value as AnimationType)} className={select}>
           <option value="none">{lang === "he" ? "ללא" : "None"}</option>
           <option value="breathing">{lang === "he" ? "נשימה" : "Breathing"}</option>
+          <option value="heartbeat">{lang === "he" ? "פעימת לב" : "Heartbeat"}</option>
+          <option value="bloodflow">{lang === "he" ? "זרימת דם" : "Blood Flow"}</option>
           <option value="gait">{lang === "he" ? "הליכה" : "Gait"}</option>
           <option value="presentation">{lang === "he" ? "תצוגה היקפית" : "Presentation"}</option>
           <option value="explode">{lang === "he" ? "פיצול שכבות" : "Explode"}</option>
@@ -83,10 +138,10 @@ export default function ProToolsPanel() {
 
       {/* Timeline */}
       <div className="flex gap-1 flex-wrap">
-        <button onClick={() => setTimelineActive(true)} className={btn}>{lang === "he" ? "התחל ציר זמן" : "Start Timeline"}</button>
-        <button onClick={() => setTimelineActive(false)} className={btn}>{lang === "he" ? "עצור ציר זמן" : "Stop Timeline"}</button>
+        <button onClick={() => { setTimelineActive(true); setAnimationPlaying(true); }} className={btn}>{lang === "he" ? "התחל ציר זמן" : "Start Timeline"}</button>
+        <button onClick={() => { setTimelineActive(false); setAnimationPlaying(false); }} className={btn}>{lang === "he" ? "עצור ציר זמן" : "Stop Timeline"}</button>
       </div>
-      <div className={status}>{lang === "he" ? "ציר זמן:" : "Timeline:"} {timelineActive ? (lang === "he" ? "פעיל" : "Active") : (lang === "he" ? "מוכן" : "Ready")}</div>
+      <div className={status}>{lang === "he" ? "ציר זמן:" : "Timeline:"} {timelineActive ? (lang === "he" ? "פעיל — אנימציה רצה" : "Active — Animation Running") : (lang === "he" ? "מוכן" : "Ready")}</div>
 
       {/* System Demo */}
       <div>
@@ -101,10 +156,10 @@ export default function ProToolsPanel() {
         </select>
       </div>
       <div className="flex gap-1">
-        <button onClick={() => setSystemDemoActive(true)} className={btn}>{lang === "he" ? "התחל הדמיה" : "Start"}</button>
-        <button onClick={() => setSystemDemoActive(false)} className={btn}>{lang === "he" ? "עצור הדמיה" : "Stop"}</button>
+        <button onClick={handleStartSystemDemo} className={btn}>{lang === "he" ? "התחל הדמיה" : "Start"}</button>
+        <button onClick={handleStopSystemDemo} className={btn}>{lang === "he" ? "עצור הדמיה" : "Stop"}</button>
       </div>
-      <div className={status}>{lang === "he" ? "הדמיה:" : "Simulation:"} {systemDemoActive ? (lang === "he" ? "פעיל" : "Active") : (lang === "he" ? "מוכן" : "Ready")}</div>
+      <div className={status}>{lang === "he" ? "הדמיה:" : "Simulation:"} {systemDemoActive ? `✅ ${systemDemo}` : (lang === "he" ? "מוכן" : "Ready")}</div>
 
       {/* Performance */}
       <div>
