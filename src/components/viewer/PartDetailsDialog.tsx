@@ -18,7 +18,7 @@ export default function PartDetailsDialog({ onClose }: PartDetailsDialogProps) {
 
   // Compute geometry stats
   const geoInfo = useMemo(() => {
-    if (!obj.geometry) return null;
+    if (!obj?.geometry) return null;
     const geo = obj.geometry as THREE.BufferGeometry;
     const posAttr = geo.getAttribute("position");
     return {
