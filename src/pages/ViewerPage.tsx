@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase } from "lucide-react";
+import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase, Move } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
