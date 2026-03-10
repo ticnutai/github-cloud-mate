@@ -607,6 +607,7 @@ export default function SceneCanvas({ model }: SceneCanvasProps) {
     originalPositions.clear();
     explodeDirections.clear();
     originalEmissive.clear();
+    originalMaterials.clear();
     setKey((k) => k + 1);
   }, [model, setLoading]);
 
