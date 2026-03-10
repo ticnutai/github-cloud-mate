@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree } from "lucide-react";
+import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
 import { MODELS, type ModelEntry } from "@/lib/models";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
@@ -15,10 +15,13 @@ import XYZPanel from "@/components/viewer/XYZPanel";
 import LayerManagerPanel from "@/components/viewer/LayerManagerPanel";
 import DirectLibraryPanel from "@/components/viewer/DirectLibraryPanel";
 import CompareModelsPanel from "@/components/viewer/CompareModelsPanel";
+import WorkspaceProfiles from "@/components/viewer/WorkspaceProfiles";
 import PartDetailsDialog from "@/components/viewer/PartDetailsDialog";
 import ModelComposerDialog from "@/components/viewer/ModelComposerDialog";
 import ThemeSettingsDialog from "@/components/viewer/ThemeSettingsDialog";
 import AnimationsGalleryDialog from "@/components/viewer/AnimationsGalleryDialog";
+import FloatingXYZDialog from "@/components/viewer/FloatingXYZDialog";
+import DebugConsole from "@/components/viewer/DebugConsole";
 
 function Section({ title, icon, defaultOpen = false, children }: { title: string; icon?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
