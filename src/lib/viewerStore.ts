@@ -326,4 +326,8 @@ export const useViewerStore = create<ViewerState>((set, get) => ({
 
   clinicalTourActive: false,
   setClinicalTourActive: (a) => set({ clinicalTourActive: a }),
+
+  modelPosition: [0, 0, 0] as [number, number, number],
+  setModelPosition: (p: [number, number, number]) => set({ modelPosition: p }),
+  resetModelPosition: () => set({ modelPosition: [0, 0, 0] }),
 }));
