@@ -6,21 +6,21 @@ export default function InfoBar() {
   const lang = useViewerStore((s) => s.lang);
 
   return (
-    <div className="flex flex-col gap-1 p-2 bg-secondary/50 rounded border border-border text-[11px]">
-      <div className="flex items-center gap-2">
-        <span className="text-muted-foreground">
+    <div className="flex gap-3 p-2 bg-secondary/50 rounded-lg border border-border text-xs">
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <span className="text-muted-foreground shrink-0">
           {lang === "he" ? "נבחר:" : "Selected:"}
         </span>
-        <span className="font-mono text-primary truncate">
-          {selectedMesh || (lang === "he" ? "אין" : "none")}
+        <span className="font-mono text-primary truncate text-[11px]">
+          {selectedMesh || (lang === "he" ? "—" : "none")}
         </span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-muted-foreground">
+      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <span className="text-muted-foreground shrink-0">
           {lang === "he" ? "ריחוף:" : "Hover:"}
         </span>
-        <span className="font-mono truncate">
-          {hoveredMesh || (lang === "he" ? "אין" : "none")}
+        <span className="font-mono truncate text-[11px]">
+          {hoveredMesh || (lang === "he" ? "—" : "none")}
         </span>
       </div>
     </div>

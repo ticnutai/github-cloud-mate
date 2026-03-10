@@ -17,13 +17,12 @@ export default function DirectLibraryPanel() {
     { name: lang === "he" ? "פיצול שכבות" : "Explode", key: "explode" },
   ];
 
-  const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
+  const btn = "px-3 py-2 text-xs bg-secondary border border-border rounded-lg hover:bg-accent transition-colors font-medium";
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold">{lang === "he" ? "ספריה ישירה" : "Quick Library"}</span>
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           <button onClick={() => useViewerStore.getState().setAnimGalleryOpen(true)} className={btn}>
             {lang === "he" ? "גלריה מלאה" : "Full Gallery"}
           </button>
@@ -33,17 +32,17 @@ export default function DirectLibraryPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         {/* Models column */}
         <div>
-          <h4 className="text-[10px] font-semibold text-muted-foreground mb-1.5">{lang === "he" ? "מודלים" : "Models"}</h4>
-          <div className="flex flex-col gap-1 max-h-32 overflow-y-auto scrollbar-gold">
+          <h4 className="text-xs font-semibold text-muted-foreground mb-2">{lang === "he" ? "מודלים" : "Models"}</h4>
+          <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto scrollbar-gold">
             {MODELS.map((m) => (
               <div
                 key={m.key}
                 onClick={() => setCurrentModelKey(m.key)}
-                className={`text-[9px] px-2 py-1 rounded cursor-pointer transition-colors truncate ${
-                  currentModelKey === m.key ? "bg-primary/15 border border-gold/40 text-foreground" : "bg-secondary/50 hover:bg-accent/50"
+                className={`text-xs px-3 py-2 rounded-lg cursor-pointer transition-colors truncate ${
+                  currentModelKey === m.key ? "bg-primary/15 border border-primary/40 text-foreground font-medium" : "bg-secondary/50 hover:bg-accent/50"
                 }`}
               >
                 {lang === "he" ? m.labels.he : m.labels.en}
@@ -54,8 +53,8 @@ export default function DirectLibraryPanel() {
 
         {/* Animations column */}
         <div>
-          <h4 className="text-[10px] font-semibold text-muted-foreground mb-1.5">{lang === "he" ? "אנימציות" : "Animations"}</h4>
-          <div className="flex flex-col gap-1 max-h-32 overflow-y-auto scrollbar-gold">
+          <h4 className="text-xs font-semibold text-muted-foreground mb-2">{lang === "he" ? "אנימציות" : "Animations"}</h4>
+          <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto scrollbar-gold">
             {animations.map((a) => (
               <div
                 key={a.key}
@@ -63,7 +62,7 @@ export default function DirectLibraryPanel() {
                   useViewerStore.getState().setAnimationType(a.key as any);
                   useViewerStore.getState().setAnimationPlaying(true);
                 }}
-                className="text-[9px] px-2 py-1 bg-secondary/50 rounded hover:bg-accent/50 cursor-pointer transition-colors"
+                className="text-xs px-3 py-2 bg-secondary/50 rounded-lg hover:bg-accent/50 cursor-pointer transition-colors"
               >
                 ▶ {a.name}
               </div>

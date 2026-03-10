@@ -13,9 +13,9 @@ export default function AnalysisPanel() {
   const layerPreset = useViewerStore((s) => s.layerPreset);
   const setLayerPreset = useViewerStore((s) => s.setLayerPreset);
 
-  const select = "w-full bg-secondary border border-border rounded px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring";
-  const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
-  const label = "text-[10px] text-muted-foreground";
+  const select = "w-full bg-secondary border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40";
+  const btn = "px-3 py-2 text-xs bg-secondary border border-border rounded-lg hover:bg-accent transition-colors font-medium";
+  const label = "text-xs text-muted-foreground font-medium";
 
   const analyzePartKeywords: Record<string, string[]> = {
     "head": ["skull", "cranium", "head", "mandible", "maxilla", "orbit", "nasal", "zygomatic", "temporal", "frontal", "parietal", "occipital", "sphenoid", "ethmoid"],
@@ -35,12 +35,8 @@ export default function AnalysisPanel() {
       return;
     }
     const keywords = analyzePartKeywords[analysisPart] || [];
-    const matched = meshes.filter((m) =>
-      keywords.some((kw) => m.name.toLowerCase().includes(kw))
-    );
-    setAnalysisResult(
-      `${lang === "he" ? "נמצאו" : "Found"} ${matched.length} ${lang === "he" ? "חלקים ב" : "parts in"} ${analysisPart}`
-    );
+    const matched = meshes.filter((m) => keywords.some((kw) => m.name.toLowerCase().includes(kw)));
+    setAnalysisResult(`${lang === "he" ? "נמצאו" : "Found"} ${matched.length} ${lang === "he" ? "חלקים ב" : "parts in"} ${analysisPart}`);
   };
 
   const handleIsolate = () => {
@@ -65,10 +61,7 @@ export default function AnalysisPanel() {
   };
 
   const handleApplyLayerPreset = () => {
-    if (layerPreset === "all") {
-      showAll();
-      return;
-    }
+    if (layerPreset === "all") { showAll(); return; }
     const keywords: Record<string, string[]> = {
       bone: ["bone", "skeletal", "skull", "vertebra", "rib", "femur", "tibia", "humerus", "radius", "ulna", "pelvis", "scapula", "clavicle", "patella", "sternum", "mandible", "maxilla"],
       muscle: ["muscle", "muscular", "bicep", "tricep", "deltoid", "pectoral", "gluteal", "quad", "hamstring"],
@@ -89,9 +82,7 @@ export default function AnalysisPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="text-xs font-semibold">{lang === "he" ? "ניתוח חלקים" : "Part Analysis"}</div>
-
+    <div className="flex flex-col gap-3.5">
       <select value={analysisPart} onChange={(e) => setAnalysisPart(e.target.value as AnalysisPart)} className={select}>
         <option value="all">{lang === "he" ? "כל החלקים" : "All Parts"}</option>
         <option value="head">{lang === "he" ? "ראש" : "Head"}</option>
@@ -105,17 +96,17 @@ export default function AnalysisPanel() {
         <option value="nervous">{lang === "he" ? "מערכת עצבים" : "Nervous"}</option>
       </select>
 
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex gap-2 flex-wrap">
         <button onClick={handleAnalyze} className={btn}>{lang === "he" ? "נתח" : "Analyze"}</button>
         <button onClick={handleIsolate} className={btn}>{lang === "he" ? "בודד" : "Isolate"}</button>
         <button onClick={handleReset} className={btn}>{lang === "he" ? "אפס" : "Reset"}</button>
       </div>
 
       {analysisResult && (
-        <div className="text-[10px] text-muted-foreground bg-secondary/50 rounded px-2 py-1">{analysisResult}</div>
+        <div className="text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">{analysisResult}</div>
       )}
 
-      <div className="border-t border-border pt-3">
+      <div className="border-t border-border pt-3.5">
         <div className="text-xs font-semibold mb-2">{lang === "he" ? "שכבות מערכת" : "System Layers"}</div>
         <select value={layerPreset} onChange={(e) => setLayerPreset(e.target.value as LayerPreset)} className={select}>
           <option value="all">{lang === "he" ? "הכול" : "All"}</option>
@@ -124,7 +115,7 @@ export default function AnalysisPanel() {
           <option value="nerve">{lang === "he" ? "עצבים בלבד" : "Nerves Only"}</option>
           <option value="vessel">{lang === "he" ? "כלי דם בלבד" : "Vessels Only"}</option>
         </select>
-        <div className="flex gap-1 mt-2">
+        <div className="flex gap-2 mt-2.5">
           <button onClick={handleApplyLayerPreset} className={btn}>{lang === "he" ? "החל שכבה" : "Apply"}</button>
           <button onClick={handleReset} className={btn}>{lang === "he" ? "שחזור מלא" : "Reset Full"}</button>
         </div>

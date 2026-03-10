@@ -17,10 +17,10 @@ export default function AdvancedToolsPanel() {
   const toggleGrid = useViewerStore((s) => s.toggleGrid);
   const setSelectedMesh = useViewerStore((s) => s.setSelectedMesh);
 
-  const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
-  const select = "w-full bg-secondary border border-border rounded px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-ring";
-  const label = "text-[10px] text-muted-foreground";
-  const status = "text-[10px] text-muted-foreground bg-secondary/50 rounded px-2 py-1";
+  const btn = "px-3 py-2 text-xs bg-secondary border border-border rounded-lg hover:bg-accent transition-colors font-medium";
+  const select = "w-full bg-secondary border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40";
+  const label = "text-xs text-muted-foreground font-medium";
+  const status = "text-xs text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2";
 
   const handleHighlightNeighbors = () => {
     if (!selectedMesh) return;
@@ -42,8 +42,6 @@ export default function AdvancedToolsPanel() {
     }
   };
 
-  // Clinical tour: iterate visible meshes one by one
-  const clinicalTourRef = useViewerStore((s) => s.clinicalTourActive);
   const handleStartClinicalTour = () => {
     setClinicalTourActive(true);
     const visibleMeshes = meshes.filter(m => m.visible);
@@ -63,55 +61,58 @@ export default function AdvancedToolsPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="text-xs font-semibold">{lang === "he" ? "כלים מתקדמים" : "Advanced Tools"}</div>
-
+    <div className="flex flex-col gap-3.5">
       {/* Part Details */}
       <button
         onClick={() => setPartDetailsOpen(true)}
         disabled={!selectedMesh}
-        className={`${btn} ${!selectedMesh ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`${btn} w-full ${!selectedMesh ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         {lang === "he" ? "פרטים מלאים על האיבר הנבחר" : "Full Part Details"}
       </button>
 
       {/* Neighbors */}
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex gap-2 flex-wrap">
         <button onClick={handleHighlightNeighbors} className={btn}>{lang === "he" ? "הדגש שכנים" : "Highlight Neighbors"}</button>
-        <button onClick={() => setHighlightedNeighbors([])} className={btn}>{lang === "he" ? "נקה שכנים" : "Clear Neighbors"}</button>
+        <button onClick={() => setHighlightedNeighbors([])} className={btn}>{lang === "he" ? "נקה" : "Clear"}</button>
       </div>
 
       {/* Grid */}
-      <button onClick={toggleGrid} className={`${btn} ${gridVisible ? "bg-gold/15 border-gold/40" : ""}`}>
+      <button onClick={toggleGrid} className={`${btn} ${gridVisible ? "bg-primary/15 border-primary/40" : ""}`}>
         ▦ {lang === "he" ? (gridVisible ? "הסתר גריד" : "הצג גריד") : (gridVisible ? "Hide Grid" : "Show Grid")}
       </button>
 
       {/* Bookmarks */}
-      <div>
+      <div className="flex flex-col gap-2 border-t border-border pt-3">
         <span className={label}>{lang === "he" ? "סימניות מצלמה" : "Camera Bookmarks"}</span>
         {bookmarks.length > 0 && (
           <select value={selectedBookmark} onChange={(e) => setSelectedBookmark(parseInt(e.target.value))} className={select}>
             {bookmarks.map((b, i) => (<option key={i} value={i}>{b.name}</option>))}
           </select>
         )}
-        <div className="flex gap-1 mt-1">
-          <button onClick={handleSaveBookmark} className={btn}>{lang === "he" ? "שמור סימניה" : "Save"}</button>
-          <button onClick={handleGoToBookmark} disabled={bookmarks.length === 0} className={`${btn} ${bookmarks.length === 0 ? "opacity-50" : ""}`}>{lang === "he" ? "עבור לסימניה" : "Go To"}</button>
+        <div className="flex gap-2">
+          <button onClick={handleSaveBookmark} className={btn}>{lang === "he" ? "שמור" : "Save"}</button>
+          <button onClick={handleGoToBookmark} disabled={bookmarks.length === 0} className={`${btn} ${bookmarks.length === 0 ? "opacity-50" : ""}`}>{lang === "he" ? "עבור" : "Go To"}</button>
         </div>
       </div>
 
       {/* Clinical Tour */}
-      <div className="flex gap-1 flex-wrap">
-        <button onClick={handleStartClinicalTour} className={btn}>{lang === "he" ? "התחל רצף קליני" : "Start Clinical Tour"}</button>
-        <button onClick={() => setClinicalTourActive(false)} className={btn}>{lang === "he" ? "עצור רצף קליני" : "Stop Clinical Tour"}</button>
+      <div className="flex flex-col gap-2 border-t border-border pt-3">
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={handleStartClinicalTour} className={btn}>{lang === "he" ? "▶ רצף קליני" : "▶ Clinical Tour"}</button>
+          <button onClick={() => setClinicalTourActive(false)} className={btn}>{lang === "he" ? "⏹ עצור" : "⏹ Stop"}</button>
+        </div>
+        <div className={status}>{clinicalTourActive ? (lang === "he" ? "✅ רצף קליני פעיל" : "✅ Tour Active") : (lang === "he" ? "מוכן" : "Ready")}</div>
       </div>
-      <div className={status}>{lang === "he" ? "רצף קליני:" : "Clinical Tour:"} {clinicalTourActive ? (lang === "he" ? "פעיל" : "Active") : (lang === "he" ? "מוכן" : "Ready")}</div>
 
       {/* Export */}
-      <div className="flex gap-1 flex-wrap">
-        <button onClick={() => setExportAction("image")} className={btn}>{lang === "he" ? "ייצוא תמונה" : "Export Image"}</button>
-        <button onClick={() => setExportAction("record")} className={btn}>{lang === "he" ? "הקלטת 8 שניות" : "Record 8s"}</button>
-        <button onClick={() => setExportAction("glb")} className={btn}>{lang === "he" ? "ייצוא GLB" : "Export GLB"}</button>
+      <div className="flex flex-col gap-2 border-t border-border pt-3">
+        <span className={label}>{lang === "he" ? "ייצוא" : "Export"}</span>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setExportAction("image")} className={btn}>{lang === "he" ? "📷 תמונה" : "📷 Image"}</button>
+          <button onClick={() => setExportAction("record")} className={btn}>{lang === "he" ? "🎥 הקלטה" : "🎥 Record"}</button>
+          <button onClick={() => setExportAction("glb")} className={btn}>{lang === "he" ? "📦 GLB" : "📦 GLB"}</button>
+        </div>
       </div>
     </div>
   );

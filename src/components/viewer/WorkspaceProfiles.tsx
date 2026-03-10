@@ -21,9 +21,7 @@ interface WorkspaceProfile {
 const STORAGE_KEY = "o3d_workspace_profiles";
 
 function loadProfiles(): WorkspaceProfile[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
 }
 
 function saveProfiles(profiles: WorkspaceProfile[]) {
@@ -37,11 +35,9 @@ export default function WorkspaceProfiles() {
   const [newName, setNewName] = useState("");
   const isRtl = lang === "he";
 
-  useEffect(() => {
-    setProfiles(loadProfiles());
-  }, []);
+  useEffect(() => { setProfiles(loadProfiles()); }, []);
 
-  const btn = "px-2 py-1 text-[10px] bg-secondary border border-border rounded hover:bg-accent transition-colors";
+  const btn = "px-3 py-2 text-xs bg-secondary border border-border rounded-lg hover:bg-accent transition-colors font-medium";
 
   const captureState = (): WorkspaceProfile["data"] => ({
     xrayEnabled: store.xrayEnabled,
@@ -73,12 +69,10 @@ export default function WorkspaceProfiles() {
     store.setLayerPreset(d.layerPreset as any);
     store.setProPreset(d.proPreset as any);
     if (d.realisticMode !== store.realisticMode) store.toggleRealisticMode();
-    // Restore visibility
     store.meshes.forEach((m) => {
       const shouldHide = d.hiddenMeshes.includes(m.name);
       if (m.visible === shouldHide) store.toggleMesh(m.name);
     });
-    // Restore favorites
     store.meshes.forEach((m) => {
       const shouldFav = d.favoriteMeshes.includes(m.name);
       if (!!m.favorite !== shouldFav) store.toggleFavorite(m.name);
@@ -95,16 +89,13 @@ export default function WorkspaceProfiles() {
     const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "workspace-profiles.json";
-    a.click();
+    a.href = url; a.download = "workspace-profiles.json"; a.click();
     URL.revokeObjectURL(url);
   };
 
   const handleImport = () => {
     const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
+    input.type = "file"; input.accept = ".json";
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -120,52 +111,50 @@ export default function WorkspaceProfiles() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="text-xs font-semibold">{isRtl ? "💼 פרופילי Workspace" : "💼 Workspace Profiles"}</div>
-
+    <div className="flex flex-col gap-3.5">
       {/* Save new */}
-      <div className="flex gap-1">
+      <div className="flex gap-2">
         <input
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           placeholder={isRtl ? "שם פרופיל..." : "Profile name..."}
-          className="flex-1 bg-secondary border border-border rounded px-2 py-1 text-[10px] font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-gold/40"
+          className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
         />
-        <button onClick={handleSave} className={`${btn} flex items-center gap-1`}>
-          <Save className="w-3 h-3" /> {isRtl ? "שמור" : "Save"}
+        <button onClick={handleSave} className={`${btn} flex items-center gap-1.5`}>
+          <Save className="w-4 h-4" /> {isRtl ? "שמור" : "Save"}
         </button>
       </div>
 
       {/* Profiles list */}
       {profiles.length > 0 ? (
-        <div className="flex flex-col gap-1 max-h-32 overflow-y-auto scrollbar-gold">
+        <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto scrollbar-gold">
           {profiles.map((p, i) => (
-            <div key={i} className="flex items-center gap-1 bg-secondary/50 rounded px-2 py-1 group">
-              <button onClick={() => handleLoad(p)} className="flex-1 text-right text-[10px] font-medium text-foreground hover:text-gold-dark transition-colors truncate">
+            <div key={i} className="flex items-center gap-2 bg-secondary/50 rounded-lg px-3 py-2 group">
+              <button onClick={() => handleLoad(p)} className="flex-1 text-right text-xs font-medium text-foreground hover:text-primary transition-colors truncate">
                 {p.name}
               </button>
-              <span className="text-[8px] text-muted-foreground shrink-0">
+              <span className="text-[10px] text-muted-foreground shrink-0">
                 {new Date(p.timestamp).toLocaleDateString()}
               </span>
-              <button onClick={() => handleDelete(i)} className="p-0.5 rounded hover:bg-destructive/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Trash2 className="w-2.5 h-2.5 text-destructive" />
+              <button onClick={() => handleDelete(i)} className="p-1 rounded-lg hover:bg-destructive/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Trash2 className="w-3.5 h-3.5 text-destructive" />
               </button>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-[9px] text-muted-foreground text-center py-2 bg-secondary/30 rounded">
+        <div className="text-xs text-muted-foreground text-center py-3 bg-secondary/30 rounded-lg">
           {isRtl ? "אין פרופילים שמורים" : "No saved profiles"}
         </div>
       )}
 
       {/* Import/Export */}
-      <div className="flex gap-1">
-        <button onClick={handleExport} className={`${btn} flex items-center gap-1`}>
-          <Download className="w-3 h-3" /> {isRtl ? "ייצוא" : "Export"}
+      <div className="flex gap-2">
+        <button onClick={handleExport} className={`${btn} flex items-center gap-1.5`}>
+          <Download className="w-4 h-4" /> {isRtl ? "ייצוא" : "Export"}
         </button>
-        <button onClick={handleImport} className={`${btn} flex items-center gap-1`}>
-          <Upload className="w-3 h-3" /> {isRtl ? "ייבוא" : "Import"}
+        <button onClick={handleImport} className={`${btn} flex items-center gap-1.5`}>
+          <Upload className="w-4 h-4" /> {isRtl ? "ייבוא" : "Import"}
         </button>
       </div>
     </div>
