@@ -57,6 +57,8 @@ export default function ViewerPage() {
   const setThemeSettingsOpen = useViewerStore((s) => s.setThemeSettingsOpen);
   const composerOpen = useViewerStore((s) => s.composerOpen);
   const setComposerOpen = useViewerStore((s) => s.setComposerOpen);
+  const [floatingXYZ, setFloatingXYZ] = useState(false);
+  const [debugConsole, setDebugConsole] = useState(false);
 
   const isRtl = lang === "he";
   const showSidebar = pinned ? sidebarVisible : (sidebarVisible && hovering) || (pinned && sidebarVisible);
