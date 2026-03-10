@@ -8,6 +8,7 @@ export interface ModelEntry {
 }
 
 export const MODELS: ModelEntry[] = [
+  // ── אנטומיה ──
   { key: "open3dmodel", path: "models/open3dmodel.glb", labels: { he: "מודל אנטומי מלא", en: "Open3DModel Full" }, mirror: false },
   { key: "overview-skeleton", path: "models/overview-skeleton.glb", labels: { he: "שלד כללי", en: "Overview Skeleton" }, mirror: false },
   { key: "overview-colored-skull", path: "models/overview-colored-skull.glb", labels: { he: "גולגולת צבעונית", en: "Overview Colored Skull" }, mirror: false },
@@ -21,11 +22,28 @@ export const MODELS: ModelEntry[] = [
   { key: "lower-limb", path: "models/lower-limb.glb", labels: { he: "גפה תחתונה", en: "Lower Limb" }, mirror: false },
   { key: "upper-limb", path: "models/upper-limb.glb", labels: { he: "גפה עליונה", en: "Upper Limb" }, mirror: false },
   { key: "vertebrae", path: "models/vertebrae.glb", labels: { he: "חוליות", en: "Vertebrae" }, mirror: false },
-  { key: "brainstem-khronos", path: "models/brainstem-khronos.glb", labels: { he: "גזע המוח", en: "Brainstem" }, mirror: false },
-  { key: "fox-khronos", path: "models/fox-khronos.glb", labels: { he: "שועל", en: "Fox" }, mirror: false },
-  { key: "damaged-helmet-khronos", path: "models/damaged-helmet-khronos.glb", labels: { he: "קסדה פגומה", en: "Damaged Helmet" }, mirror: false },
+  // ── Khronos / הדגמה ──
+  { key: "brainstem-khronos", path: "models/brainstem-khronos.glb", labels: { he: "גזע המוח (Khronos)", en: "Brainstem (Khronos)" }, mirror: false },
+  { key: "scattering-skull-khronos", path: "models/scattering-skull-khronos.glb", labels: { he: "גולגולת פיזור אור (Khronos)", en: "Scattering Skull (Khronos)" }, mirror: false },
+  { key: "recursive-skeletons-khronos", path: "models/recursive-skeletons-khronos.glb", labels: { he: "שלדים רקורסיביים (Khronos)", en: "Recursive Skeletons (Khronos)" }, mirror: false },
+  { key: "rigged-figure-khronos", path: "models/rigged-figure-khronos.glb", labels: { he: "דמות ממורגת (Khronos)", en: "Rigged Figure (Khronos)" }, mirror: false },
+  { key: "rigged-simple-khronos", path: "models/rigged-simple-khronos.glb", labels: { he: "ריג פשוט (Khronos)", en: "Rigged Simple (Khronos)" }, mirror: false },
+  { key: "cesiumman-khronos", path: "models/cesiumman-khronos.glb", labels: { he: "אדם הדגמה (Khronos)", en: "Cesium Man (Khronos)" }, mirror: false },
+  { key: "fox-khronos", path: "models/fox-khronos.glb", labels: { he: "שועל (Khronos)", en: "Fox (Khronos)" }, mirror: false },
+  { key: "damaged-helmet-khronos", path: "models/damaged-helmet-khronos.glb", labels: { he: "קסדה פגומה (Khronos)", en: "Damaged Helmet (Khronos)" }, mirror: false },
+  { key: "dragonattenuation-khronos", path: "models/dragonattenuation-khronos.glb", labels: { he: "דרקון מתקדם (Khronos)", en: "Dragon Attenuation (Khronos)" }, mirror: false },
+  { key: "chronograph-watch-khronos", path: "models/chronograph-watch-khronos.glb", labels: { he: "שעון כרונוגרף (Khronos)", en: "Chronograph Watch (Khronos)" }, mirror: false },
+  { key: "corset-khronos", path: "models/corset-khronos.glb", labels: { he: "דגם מחוך (Khronos)", en: "Corset (Khronos)" }, mirror: false },
+  { key: "antique-camera-khronos", path: "models/antique-camera-khronos.glb", labels: { he: "מצלמה עתיקה (Khronos)", en: "Antique Camera (Khronos)" }, mirror: false },
+  { key: "waterbottle-khronos", path: "models/waterbottle-khronos.glb", labels: { he: "בקבוק מים (Khronos)", en: "Water Bottle (Khronos)" }, mirror: false },
+  // ── רכבים / אובייקטים ──
   { key: "ground-vehicle", path: "models/ground-vehicle.glb", labels: { he: "רכב קרקעי", en: "Ground Vehicle" }, mirror: false },
   { key: "cesium-drone", path: "models/cesium-drone.glb", labels: { he: "רחפן", en: "Drone" }, mirror: false },
+  { key: "cesium-air", path: "models/cesium-air.glb", labels: { he: "מטוס Cesium", en: "Cesium Air" }, mirror: false },
+  { key: "boombox-khronos", path: "models/boombox-khronos.glb", labels: { he: "בומבוקס (Khronos)", en: "BoomBox (Khronos)" }, mirror: false },
+  { key: "carconcept-khronos", path: "models/carconcept-khronos.glb", labels: { he: "רכב קונספט (Khronos)", en: "Car Concept (Khronos)" }, mirror: false },
+  { key: "glam-velvet-sofa-khronos", path: "models/glam-velvet-sofa-khronos.glb", labels: { he: "ספת קטיפה יוקרתית (Khronos)", en: "Glam Velvet Sofa (Khronos)" }, mirror: false },
+  { key: "glass-vase-flowers-khronos", path: "models/glass-vase-flowers-khronos.glb", labels: { he: "אגרטל זכוכית עם פרחים (Khronos)", en: "Glass Vase Flowers (Khronos)" }, mirror: false },
 ];
 
 export function getModelUrl(model: ModelEntry): string {
