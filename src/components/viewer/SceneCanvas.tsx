@@ -33,12 +33,25 @@ function Model({ model }: ModelProps) {
     const meshInfos: { name: string; visible: boolean; object: THREE.Object3D }[] = [];
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
         meshInfos.push({ name: child.name || `mesh_${meshInfos.length}`, visible: child.visible, object: child });
-        // Store original emissive
-        const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
-        if (mat.emissive && !originalEmissive.has(child.uuid)) {
-          originalEmissive.set(child.uuid, { color: mat.emissive.clone(), intensity: mat.emissiveIntensity });
+
+        // Ensure bounding volumes are computed for reliable raycasting
+        if (mesh.geometry) {
+          mesh.geometry.computeBoundingSphere();
+          mesh.geometry.computeBoundingBox();
         }
+
+        // Make all materials double-sided so raycasting hits from any angle
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        mats.forEach((mat: any) => {
+          if (mat) {
+            mat.side = THREE.DoubleSide;
+            if (mat.emissive && !originalEmissive.has(child.uuid)) {
+              originalEmissive.set(child.uuid, { color: mat.emissive.clone(), intensity: mat.emissiveIntensity });
+            }
+          }
+        });
       }
     });
     setMeshes(meshInfos);
