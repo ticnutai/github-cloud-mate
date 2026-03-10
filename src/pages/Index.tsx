@@ -37,7 +37,6 @@ const Index = () => {
       {state === "connect" && <ConnectScreen onConnect={handleConnect} />}
       {state === "select" && (
         <RepoSelect
-          username={username}
           onSelect={handleSelectRepo}
           onDisconnect={handleDisconnect}
         />
