@@ -32,8 +32,8 @@ export default function PartDetailsDialog({ onClose }: PartDetailsDialogProps) {
 
   // Get material info
   const matInfo = useMemo(() => {
+    if (!obj) return null;
     const mat = obj.material as THREE.MeshStandardMaterial;
-    if (!mat) return null;
     return {
       type: mat.type,
       color: mat.color ? `#${mat.color.getHexString()}` : "N/A",
