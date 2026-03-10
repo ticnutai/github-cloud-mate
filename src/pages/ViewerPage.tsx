@@ -303,6 +303,9 @@ export default function ViewerPage() {
                 <Section title={isRtl ? "ספריה ישירה" : "Quick Library"} icon={<Library className="w-4 h-4" />} defaultOpen>
                   <DirectLibraryPanel />
                 </Section>
+                <Section title={isRtl ? "העלאת מודלים" : "Upload Models"} icon={<Upload className="w-4 h-4" />}>
+                  <ModelUploadPanel onLoadModel={handleLoadUploadedModel} />
+                </Section>
                 <Section title={isRtl ? "השוואת מודלים" : "Compare"} icon={<GitCompare className="w-4 h-4" />}>
                   <CompareModelsPanel />
                 </Section>
