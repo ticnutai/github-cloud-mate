@@ -24,6 +24,24 @@ export default function ModelPositionPanel() {
   const toggleDrag = useViewerStore((s) => s.toggleDragMode);
   const isRtl = lang === "he";
 
+  // Load saved position on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === 3) {
+          setPos(parsed as [number, number, number]);
+        }
+      }
+    } catch {}
+  }, [setPos]);
+
+  // Save position on change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
+  }, [pos]);
+
   const update = (idx: number, val: number) => {
     const next: [number, number, number] = [...pos];
     next[idx] = Math.round(val * 100) / 100;
