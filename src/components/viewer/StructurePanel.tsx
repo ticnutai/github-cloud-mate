@@ -86,7 +86,7 @@ export default function StructurePanel() {
         {mesh.visible ? <Eye className="w-4 h-4 text-primary" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
       </button>
       <button onClick={(e) => { e.stopPropagation(); toggleFavorite(mesh.name); }} className="flex-shrink-0" title="Favorite">
-        {mesh.favorite ? <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" /> : <StarOff className="w-3.5 h-3.5 text-muted-foreground/40" />}
+        {mesh.favorite ? <Star className="w-3.5 h-3.5 text-primary fill-primary" /> : <StarOff className="w-3.5 h-3.5 text-muted-foreground/40" />}
       </button>
       <span className="text-xs font-mono truncate flex-1">{mesh.name}</span>
     </div>
