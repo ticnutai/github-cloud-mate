@@ -9,7 +9,7 @@ export interface MeshInfo {
   favorite?: boolean;
 }
 
-export type AnimationType = "none" | "breathing" | "gait" | "presentation" | "explode";
+export type AnimationType = "none" | "breathing" | "gait" | "presentation" | "explode" | "heartbeat" | "bloodflow";
 export type SystemDemo = "heart" | "respiratory" | "circulatory" | "lymphatic" | "urinary" | "head";
 export type PerformanceMode = "balanced" | "max" | "quality";
 export type ProPreset = "custom" | "clinical" | "teaching" | "presentation";
