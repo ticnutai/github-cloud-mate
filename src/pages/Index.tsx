@@ -6,20 +6,18 @@ import Workspace from "@/components/Workspace";
 
 type AppState = "connect" | "select" | "sync" | "workspace";
 
-interface SelectedRepo {
-  name: string;
-  fullName: string;
-}
-
 const Index = () => {
   const [state, setState] = useState<AppState>("connect");
-  const [selectedRepo, setSelectedRepo] = useState<SelectedRepo | null>(null);
-  const username = "developer";
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [repoOwner, setRepoOwner] = useState("");
+  const [repoName, setRepoName] = useState("");
 
   const handleConnect = () => setState("select");
 
-  const handleSelectRepo = (repo: { name: string; fullName: string }) => {
-    setSelectedRepo(repo);
+  const handleStartSync = (owner: string, name: string, projId: string) => {
+    setRepoOwner(owner);
+    setRepoName(name);
+    setProjectId(projId);
     setState("sync");
   };
 
@@ -28,7 +26,9 @@ const Index = () => {
   }, []);
 
   const handleDisconnect = () => {
-    setSelectedRepo(null);
+    setProjectId(null);
+    setRepoOwner("");
+    setRepoName("");
     setState("connect");
   };
 
@@ -37,20 +37,22 @@ const Index = () => {
       {state === "connect" && <ConnectScreen onConnect={handleConnect} />}
       {state === "select" && (
         <RepoSelect
-          onSelect={handleSelectRepo}
+          onStartSync={handleStartSync}
           onDisconnect={handleDisconnect}
         />
       )}
-      {state === "sync" && selectedRepo && (
+      {state === "sync" && projectId && (
         <SyncProgress
-          repoName={selectedRepo.name}
+          projectId={projectId}
+          repoName={repoName}
           onComplete={handleSyncComplete}
         />
       )}
-      {state === "workspace" && selectedRepo && (
+      {state === "workspace" && projectId && (
         <Workspace
-          repoName={selectedRepo.name}
-          username={username}
+          projectId={projectId}
+          repoName={repoName}
+          username={repoOwner}
           onDisconnect={handleDisconnect}
         />
       )}

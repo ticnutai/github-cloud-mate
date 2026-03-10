@@ -1,38 +1,34 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import GitHubIcon from "./GitHubIcon";
 
 interface RepoSelectProps {
-  onSelect: (repo: { name: string; fullName: string }) => void;
+  onStartSync: (owner: string, name: string, projectId: string) => void;
   onDisconnect: () => void;
 }
 
-const RepoSelect = ({ onSelect, onDisconnect }: RepoSelectProps) => {
+const RepoSelect = ({ onStartSync, onDisconnect }: RepoSelectProps) => {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const parseGitHubUrl = (input: string): { name: string; fullName: string } | null => {
+  const parseGitHubUrl = (input: string): { owner: string; name: string } | null => {
     const trimmed = input.trim();
-
-    // Match patterns: https://github.com/user/repo, github.com/user/repo, user/repo
     const patterns = [
       /^https?:\/\/github\.com\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)\/?$/,
       /^github\.com\/([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)\/?$/,
       /^([a-zA-Z0-9_.-]+)\/([a-zA-Z0-9_.-]+)$/,
     ];
-
     for (const pattern of patterns) {
       const match = trimmed.match(pattern);
       if (match) {
-        const owner = match[1];
-        const name = match[2].replace(/\.git$/, "");
-        return { name, fullName: `${owner}/${name}` };
+        return { owner: match[1], name: match[2].replace(/\.git$/, "") };
       }
     }
-
     return null;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError("");
 
     if (!url.trim()) {
@@ -51,11 +47,35 @@ const RepoSelect = ({ onSelect, onDisconnect }: RepoSelectProps) => {
       return;
     }
 
-    onSelect(parsed);
+    setLoading(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("sync-repo", {
+        body: { owner: parsed.owner, repo: parsed.name },
+      });
+
+      if (fnError) {
+        setError(`שגיאה בסנכרון: ${fnError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      if (data?.error) {
+        setError(data.error);
+        setLoading(false);
+        return;
+      }
+
+      if (data?.project_id) {
+        onStartSync(parsed.owner, parsed.name, data.project_id);
+      }
+    } catch (e) {
+      setError("שגיאה בחיבור לשרת. נסה שוב.");
+      setLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSubmit();
+    if (e.key === "Enter" && !loading) handleSubmit();
   };
 
   return (
@@ -89,29 +109,25 @@ const RepoSelect = ({ onSelect, onDisconnect }: RepoSelectProps) => {
             }}
             onKeyDown={handleKeyDown}
             maxLength={500}
-            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono text-left"
+            disabled={loading}
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring font-mono text-left disabled:opacity-50"
           />
 
-          {error && (
-            <p className="text-destructive text-xs mt-2">{error}</p>
-          )}
+          {error && <p className="text-destructive text-xs mt-2">{error}</p>}
 
           <button
             onClick={handleSubmit}
-            className="w-full mt-4 bg-primary text-primary-foreground px-6 py-2.5 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity"
+            disabled={loading}
+            className="w-full mt-4 bg-primary text-primary-foreground px-6 py-2.5 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            סנכרן פרויקט
+            {loading ? "מתחבר ל-GitHub..." : "סנכרן פרויקט"}
           </button>
         </div>
 
         <div className="mt-8 text-xs text-muted-foreground max-w-md text-center space-y-1">
           <p>פורמטים נתמכים:</p>
-          <p dir="ltr" className="font-mono">
-            https://github.com/user/repo
-          </p>
-          <p dir="ltr" className="font-mono">
-            user/repo
-          </p>
+          <p dir="ltr" className="font-mono">https://github.com/user/repo</p>
+          <p dir="ltr" className="font-mono">user/repo</p>
         </div>
       </div>
     </div>

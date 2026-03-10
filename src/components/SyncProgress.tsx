@@ -1,80 +1,144 @@
 import { useEffect, useState } from "react";
 import { Check, Clock, ArrowUp } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SyncProgressProps {
+  projectId: string;
   repoName: string;
   onComplete: () => void;
 }
 
-type FileStatus = "pending" | "syncing" | "done";
-
 interface SyncFile {
-  name: string;
-  status: FileStatus;
+  id: string;
+  file_path: string;
+  file_type: string;
+  status: string;
 }
 
-const INITIAL_FILES: SyncFile[] = [
-  { name: "composer.json", status: "pending" },
-  { name: ".env.example", status: "pending" },
-  { name: "routes/web.php", status: "pending" },
-  { name: "app/Models/User.php", status: "pending" },
-  { name: "config/database.php", status: "pending" },
-  { name: "database/migrations/", status: "pending" },
-  { name: "resources/views/", status: "pending" },
-  { name: "public/index.php", status: "pending" },
-];
+const SyncProgress = ({ projectId, repoName, onComplete }: SyncProgressProps) => {
+  const [files, setFiles] = useState<SyncFile[]>([]);
+  const [projectStatus, setProjectStatus] = useState("syncing");
 
-const SyncProgress = ({ repoName, onComplete }: SyncProgressProps) => {
-  const [files, setFiles] = useState<SyncFile[]>(INITIAL_FILES);
-
+  // Fetch initial files
   useEffect(() => {
-    let currentIndex = 0;
+    const fetchFiles = async () => {
+      const { data } = await supabase
+        .from("sync_files")
+        .select("id, file_path, file_type, status")
+        .eq("project_id", projectId)
+        .order("file_path");
 
-    const interval = setInterval(() => {
-      if (currentIndex >= INITIAL_FILES.length) {
+      if (data) setFiles(data);
+    };
+    fetchFiles();
+  }, [projectId]);
+
+  // Subscribe to realtime changes on sync_files
+  useEffect(() => {
+    const channel = supabase
+      .channel(`sync-files-${projectId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "sync_files",
+          filter: `project_id=eq.${projectId}`,
+        },
+        (payload) => {
+          const updated = payload.new as SyncFile;
+          setFiles((prev) =>
+            prev.map((f) => (f.id === updated.id ? { ...f, status: updated.status } : f))
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "sync_files",
+          filter: `project_id=eq.${projectId}`,
+        },
+        (payload) => {
+          const newFile = payload.new as SyncFile;
+          setFiles((prev) => {
+            if (prev.find((f) => f.id === newFile.id)) return prev;
+            return [...prev, newFile];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [projectId]);
+
+  // Subscribe to project status changes
+  useEffect(() => {
+    const channel = supabase
+      .channel(`project-${projectId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "projects",
+          filter: `id=eq.${projectId}`,
+        },
+        (payload) => {
+          const proj = payload.new as { status: string };
+          setProjectStatus(proj.status);
+          if (proj.status === "synced") {
+            setTimeout(onComplete, 1000);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, onComplete]);
+
+  // Also poll project status as fallback
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("projects")
+        .select("status")
+        .eq("id", projectId)
+        .single();
+
+      if (data?.status === "synced" && projectStatus !== "synced") {
+        setProjectStatus("synced");
+        setTimeout(onComplete, 1000);
         clearInterval(interval);
-        setTimeout(onComplete, 800);
-        return;
       }
-
-      const idx = currentIndex;
-
-      // Set current to syncing
-      setFiles((prev) =>
-        prev.map((f, i) => (i === idx ? { ...f, status: "syncing" } : f))
-      );
-
-      // After delay, set to done
-      setTimeout(() => {
-        setFiles((prev) =>
-          prev.map((f, i) => (i === idx ? { ...f, status: "done" } : f))
-        );
-      }, 400 + Math.random() * 300);
-
-      currentIndex++;
-    }, 600);
+    }, 2000);
 
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, [projectId, projectStatus, onComplete]);
 
   const doneCount = files.filter((f) => f.status === "done").length;
 
-  const StatusIcon = ({ status }: { status: FileStatus }) => {
+  const StatusIcon = ({ status }: { status: string }) => {
     switch (status) {
-      case "pending":
-        return <Clock className="w-4 h-4 text-warning" />;
       case "syncing":
         return <ArrowUp className="w-4 h-4 text-primary animate-pulse" />;
       case "done":
         return <Check className="w-4 h-4 text-success" />;
+      default:
+        return <Clock className="w-4 h-4 text-warning" />;
     }
   };
 
-  const statusLabel = (status: FileStatus) => {
+  const statusLabel = (status: string) => {
     switch (status) {
-      case "pending": return "בתור";
       case "syncing": return "מעלה...";
       case "done": return "הושלם";
+      default: return "בתור";
     }
   };
 
@@ -86,17 +150,22 @@ const SyncProgress = ({ repoName, onComplete }: SyncProgressProps) => {
           {doneCount}/{files.length} קבצים הושלמו
         </p>
 
-        <div className="border border-border rounded-md divide-y divide-border">
+        <div className="border border-border rounded-md divide-y divide-border max-h-[400px] overflow-y-auto">
+          {files.length === 0 && (
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+              טוען קבצים...
+            </div>
+          )}
           {files.map((file) => (
             <div
-              key={file.name}
+              key={file.id}
               className="flex items-center justify-between px-4 py-2.5"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 min-w-0">
                 <StatusIcon status={file.status} />
-                <span className="text-sm font-mono">{file.name}</span>
+                <span className="text-sm font-mono truncate">{file.file_path}</span>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground whitespace-nowrap mr-2">
                 {statusLabel(file.status)}
               </span>
             </div>
