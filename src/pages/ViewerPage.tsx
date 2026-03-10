@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Globe, Settings, Pin, PinOff, ChevronLeft, ChevronRight as ChevronRightIcon, ChevronDown, Puzzle, Layers, Eye, Scan, BookOpen, Wrench, Move3D, Camera, Stethoscope, Library, GitCompare, FolderTree, Gamepad2, Bug, Briefcase, Move, ZoomIn, ZoomOut, RotateCcw, Crosshair } from "lucide-react";
 import { useViewerStore } from "@/lib/viewerStore";
-import { MODELS, type ModelEntry } from "@/lib/models";
+import { MODELS, MODEL_CATEGORIES, type ModelEntry, type ModelCategory } from "@/lib/models";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SceneCanvas from "@/components/viewer/SceneCanvas";
 import StructurePanel from "@/components/viewer/StructurePanel";
