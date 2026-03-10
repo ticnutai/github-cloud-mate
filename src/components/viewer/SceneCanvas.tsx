@@ -153,7 +153,6 @@ function HighlightController() {
 
   return null;
 }
-}
 
 // ─── Camera Controller ───
 function CameraController() {
