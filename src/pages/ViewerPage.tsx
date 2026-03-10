@@ -227,6 +227,18 @@ export default function ViewerPage() {
               <AdvancedToolsPanel />
             </Section>
 
+            <Section title={isRtl ? "עורך שכבות" : "Layer Manager"} icon={<FolderTree className="w-3.5 h-3.5" />}>
+              <LayerManagerPanel />
+            </Section>
+
+            <Section title={isRtl ? "ספריה ישירה" : "Quick Library"} icon={<Library className="w-3.5 h-3.5" />}>
+              <DirectLibraryPanel />
+            </Section>
+
+            <Section title={isRtl ? "השוואת מודלים" : "Compare Models"} icon={<GitCompare className="w-3.5 h-3.5" />}>
+              <CompareModelsPanel />
+            </Section>
+
             <Section title={isRtl ? "כיול XYZ" : "XYZ Calibration"} icon={<Move3D className="w-3.5 h-3.5" />}>
               <XYZPanel />
             </Section>
@@ -234,7 +246,7 @@ export default function ViewerPage() {
         </aside>
       </div>
 
-      {/* Footer — Gold top border */}
+      {/* Footer */}
       <footer className="px-5 py-1.5 bg-card text-[10px] text-muted-foreground text-center shrink-0" style={{ borderTop: '1px solid hsl(43 50% 72%)' }}>
         Built with <a href="https://threejs.org/" target="_blank" rel="noopener" className="underline hover:text-gold-dark transition-colors">three.js</a> · Models licensed under CC BY SA · <a href="https://anatomytool.org/open3dmodel" target="_blank" rel="noopener" className="underline hover:text-gold-dark transition-colors">Open3DModel</a>
       </footer>
@@ -243,6 +255,7 @@ export default function ViewerPage() {
       {partDetailsOpen && <PartDetailsDialog onClose={() => setPartDetailsOpen(false)} />}
       {composerOpen && <ModelComposerDialog onClose={() => setComposerOpen(false)} />}
       {themeSettingsOpen && <ThemeSettingsDialog onClose={() => setThemeSettingsOpen(false)} />}
+      {useViewerStore.getState().animGalleryOpen && <AnimationsGalleryDialog onClose={() => useViewerStore.getState().setAnimGalleryOpen(false)} />}
     </div>
   );
 }
