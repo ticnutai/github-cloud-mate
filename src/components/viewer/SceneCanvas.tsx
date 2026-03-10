@@ -44,20 +44,22 @@ function Model({ model }: ModelProps) {
     setMeshes(meshInfos);
   }, [scene, setMeshes, setLoading]);
 
-  // X-ray effect
+  // X-ray effect — handles both single and array materials
   useEffect(() => {
     scene.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
-        if (xrayEnabled) {
-          mat.transparent = true;
-          mat.opacity = child.name === selectedMesh ? 1 : xrayOpacity;
-          mat.depthWrite = child.name === selectedMesh;
-        } else {
-          mat.transparent = false;
-          mat.opacity = 1;
-          mat.depthWrite = true;
-        }
+        const mats = getMaterials(child as THREE.Mesh);
+        mats.forEach((mat) => {
+          if (xrayEnabled) {
+            mat.transparent = true;
+            mat.opacity = child.name === selectedMesh ? 1 : xrayOpacity;
+            mat.depthWrite = child.name === selectedMesh;
+          } else {
+            mat.transparent = false;
+            mat.opacity = 1;
+            mat.depthWrite = true;
+          }
+        });
       }
     });
   }, [xrayEnabled, xrayOpacity, selectedMesh, scene]);
@@ -96,6 +98,39 @@ function Model({ model }: ModelProps) {
   );
 }
 
+// ─── Highlight helpers ───
+function getMaterials(mesh: THREE.Mesh): THREE.MeshStandardMaterial[] {
+  const mat = mesh.material;
+  const arr = Array.isArray(mat) ? mat : [mat];
+  return arr.filter((m): m is THREE.MeshStandardMaterial => m && 'emissive' in m);
+}
+
+function backupMaterial(mat: THREE.MeshStandardMaterial, id: string) {
+  if (!originalEmissive.has(id)) {
+    originalEmissive.set(id, { color: mat.emissive.clone(), intensity: mat.emissiveIntensity });
+  }
+  if (!originalMaterials.has(id)) {
+    originalMaterials.set(id, { color: mat.color.clone(), opacity: mat.opacity, transparent: mat.transparent });
+  }
+}
+
+function applyHighlight(mat: THREE.MeshStandardMaterial, id: string, mode: "selected" | "hovered" | "none") {
+  const origE = originalEmissive.get(id);
+  const origM = originalMaterials.get(id);
+  if (mode === "selected") {
+    mat.emissive.setHex(0x2244aa);
+    mat.emissiveIntensity = 0.9;
+    if (origM) mat.color.copy(origM.color).lerp(new THREE.Color(0x5577cc), 0.25);
+  } else if (mode === "hovered") {
+    mat.emissive.setHex(0x1f7a4a);
+    mat.emissiveIntensity = 0.6;
+    if (origM) mat.color.copy(origM.color).lerp(new THREE.Color(0x44aa77), 0.12);
+  } else {
+    if (origE) { mat.emissive.copy(origE.color); mat.emissiveIntensity = origE.intensity; }
+    if (origM) mat.color.copy(origM.color);
+  }
+}
+
 // ─── Original materials backup for highlight restore ───
 const originalMaterials = new Map<string, { color: THREE.Color; opacity: number; transparent: boolean }>();
 
@@ -108,42 +143,13 @@ function HighlightController() {
   useEffect(() => {
     scene.traverse((child) => {
       if (!(child as THREE.Mesh).isMesh) return;
-      const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
-      if (!mat.emissive) return;
-
-      // Backup original material properties once
-      if (!originalMaterials.has(child.uuid)) {
-        originalMaterials.set(child.uuid, {
-          color: mat.color.clone(),
-          opacity: mat.opacity,
-          transparent: mat.transparent,
-        });
-      }
-      const orig = originalEmissive.get(child.uuid);
-      const origMat = originalMaterials.get(child.uuid);
-
-      if (child.name === selectedMesh) {
-        // Strong gold highlight - emissive + color tint
-        mat.emissive.setHex(0xffaa00);
-        mat.emissiveIntensity = 0.8;
-        // Also slightly tint the diffuse color for extra visibility
-        if (origMat) {
-          mat.color.copy(origMat.color).lerp(new THREE.Color(0xffcc33), 0.3);
-        }
-      } else if (child.name === hoveredMesh) {
-        // Blue hover highlight
-        mat.emissive.setHex(0x4499ff);
-        mat.emissiveIntensity = 0.5;
-        if (origMat) {
-          mat.color.copy(origMat.color).lerp(new THREE.Color(0x88bbff), 0.15);
-        }
-      } else if (orig) {
-        mat.emissive.copy(orig.color);
-        mat.emissiveIntensity = orig.intensity;
-        if (origMat) {
-          mat.color.copy(origMat.color);
-        }
-      }
+      const mats = getMaterials(child as THREE.Mesh);
+      mats.forEach((mat, i) => {
+        const id = `${child.uuid}_${i}`;
+        backupMaterial(mat, id);
+        const mode = child.name === selectedMesh ? "selected" : child.name === hoveredMesh ? "hovered" : "none";
+        applyHighlight(mat, id, mode);
+      });
     });
   }, [selectedMesh, hoveredMesh, scene]);
 
