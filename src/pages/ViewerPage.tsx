@@ -16,6 +16,7 @@ import LayerManagerPanel from "@/components/viewer/LayerManagerPanel";
 import DirectLibraryPanel from "@/components/viewer/DirectLibraryPanel";
 import CompareModelsPanel from "@/components/viewer/CompareModelsPanel";
 import WorkspaceProfiles from "@/components/viewer/WorkspaceProfiles";
+import ModelPositionPanel from "@/components/viewer/ModelPositionPanel";
 import PartDetailsDialog from "@/components/viewer/PartDetailsDialog";
 import ModelComposerDialog from "@/components/viewer/ModelComposerDialog";
 import ThemeSettingsDialog from "@/components/viewer/ThemeSettingsDialog";
