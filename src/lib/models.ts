@@ -58,13 +58,12 @@ export const MODELS: ModelEntry[] = [
   { key: "glam-velvet-sofa-khronos", path: "models/glam-velvet-sofa-khronos.glb", labels: { he: "ספת קטיפה יוקרתית (Khronos)", en: "Glam Velvet Sofa (Khronos)" }, mirror: false, category: "objects" },
   { key: "glass-vase-flowers-khronos", path: "models/glass-vase-flowers-khronos.glb", labels: { he: "אגרטל זכוכית עם פרחים (Khronos)", en: "Glass Vase Flowers (Khronos)" }, mirror: false, category: "objects" },
   // ── מודלים חיצוניים חינמיים ──
-  { key: "ext-brain", path: "", labels: { he: "מוח אנושי", en: "Human Brain" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/AlaSQL/alasql.github.io/master/demo/003gltf/avocado/Avocado.glb" },
   { key: "ext-duck", path: "", labels: { he: "ברווז (Khronos Sample)", en: "Duck (Khronos Sample)" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Duck/glTF-Binary/Duck.glb" },
   { key: "ext-avocado", path: "", labels: { he: "אבוקדו תלת-ממד", en: "Avocado 3D" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Avocado/glTF-Binary/Avocado.glb" },
   { key: "ext-lantern", path: "", labels: { he: "פנס עתיק", en: "Lantern" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Lantern/glTF-Binary/Lantern.glb" },
-  { key: "ext-suzzanne", path: "", labels: { he: "סוזן (Blender)", en: "Suzanne (Blender)" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SuzanneMorphSparse/glTF-Binary/SuzanneMorphSparse.glb" },
-  { key: "ext-flight-helmet", path: "", labels: { he: "קסדת טיס", en: "Flight Helmet" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/FlightHelmet/glTF-Binary/FlightHelmet.glb" },
-  { key: "ext-buggy", path: "", labels: { he: "באגי שטח", en: "Buggy" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Buggy/glTF-Binary/Buggy.glb" },
+  { key: "ext-brain", path: "", labels: { he: "מוח (אבוקדו דמו)", en: "Brain (Avocado Demo)" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/AlaSQL/alasql.github.io/master/demo/003gltf/avocado/Avocado.glb" },
+  { key: "ext-box-animated", path: "", labels: { he: "קוביה מונפשת", en: "Animated Box" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoxAnimated/glTF-Binary/BoxAnimated.glb" },
+  { key: "ext-animated-cube", path: "", labels: { he: "משולש מסתובב", en: "Animated Triangle" }, mirror: false, category: "external", directUrl: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AnimatedTriangle/glTF-Embedded/AnimatedTriangle.gltf" },
 ];
 
 export function getModelUrl(model: ModelEntry): string {
