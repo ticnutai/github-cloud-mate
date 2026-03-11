@@ -36,12 +36,13 @@ export default function DirectLibraryPanel() {
         {/* Models column */}
         <div>
           <h4 className="text-xs font-semibold text-muted-foreground mb-2">{lang === "he" ? "מודלים" : "Models"}</h4>
-          <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto scrollbar-gold">
+          <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto scrollbar-gold">
             {MODELS.map((m) => (
               <div
                 key={m.key}
                 onClick={() => setCurrentModelKey(m.key)}
-                className={`text-xs px-3 py-2 rounded-lg cursor-pointer transition-colors truncate ${
+                dir="auto"
+                className={`text-xs px-3 py-2 rounded-lg cursor-pointer transition-colors text-right whitespace-normal leading-snug ${
                   currentModelKey === m.key ? "bg-primary/15 border border-primary/40 text-foreground font-medium" : "bg-secondary/50 hover:bg-accent/50"
                 }`}
               >
